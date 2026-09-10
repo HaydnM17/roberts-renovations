@@ -1,0 +1,42 @@
+# Roberts Renovations, spec mockup. This file does not apply to functions/ responses;
+# the contact endpoint sets its own headers in code.
+
+# This is a spec mockup, not yet approved by the client: the X-Robots-Tag line at
+# the end of the block below keeps the whole site out of every search index.
+# REMOVE that one line (and this comment) at launch, once the client has agreed
+# to the site.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://www.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Robots-Tag: noindex
+
+# Fonts, film stills, work photos and the poster frames never change name when they
+# change content, so a year-long browser cache is safe. /assets/* already covers
+# /assets/film/* (Cloudflare's "*" matches the rest of the path, slashes included),
+# so there is no separate rule for the film subfolder.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/frames/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Preview and version subdomains stay out of the index permanently, launch or not.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+# Belt and suspenders in case this repo is ever mirrored to GitHub Pages. Cloudflare
+# only serves the pages.dev and custom-domain hosts above, so this rule is inert
+# unless that changes.
+https://*.github.io/*
+  X-Robots-Tag: noindex

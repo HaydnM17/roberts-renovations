@@ -1,0 +1,246 @@
+/* Roberts Renovations, extras.
+   Components added after the main restyle: the build slider, work filters, the sticky call bar,
+   the open-now badge, the copy button, job chips, lightbox navigation.
+   Loaded after styles.css and written only against its tokens, so the two never fight. */
+
+/* ---------------------------------------------------------------- the build slider */
+.builder{position:relative}
+.builder-stage{position:relative;border:1px solid var(--line);border-radius:2px;overflow:hidden;background:#0f1010}
+.builder-stage canvas{display:block;width:100%;height:auto}
+.builder-stage::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(to top,rgba(10,10,8,.72),rgba(10,10,8,0) 42%)}
+.builder-label{position:absolute;left:16px;bottom:14px;z-index:2;margin:0;
+  font:800 clamp(20px,4.4vw,30px)/1.05 var(--display);letter-spacing:-.02em;color:#fff;
+  text-shadow:0 1px 2px rgba(8,8,6,.9),0 3px 14px rgba(8,8,6,.7)}
+.builder-count{position:absolute;right:16px;top:14px;z-index:2;
+  font:500 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#fff;
+  text-shadow:0 1px 8px rgba(0,0,0,.8)}
+
+.builder-control{display:flex;align-items:center;gap:14px;margin-top:18px}
+.builder-control .hint{font:500 11.5px/1.3 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+.builder-range{-webkit-appearance:none;appearance:none;flex:1;height:44px;background:transparent;cursor:grab;margin:0}
+.builder-range:active{cursor:grabbing}
+.builder-range::-webkit-slider-runnable-track{height:2px;background:var(--line-strong);border-radius:0}
+.builder-range::-moz-range-track{height:2px;background:var(--line-strong)}
+.builder-range::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;margin-top:-12px;
+  background:var(--accent);border:0;border-radius:2px;box-shadow:0 2px 12px rgba(0,0,0,.5);
+  transition:transform .18s var(--ease-out),background-color .18s}
+.builder-range::-moz-range-thumb{width:26px;height:26px;background:var(--accent);border:0;border-radius:2px}
+.builder-range:hover::-webkit-slider-thumb{transform:scale(1.08)}
+.builder-range:active::-webkit-slider-thumb{background:var(--accent-deep);transform:scale(.96)}
+.builder-range:focus-visible{outline:3px solid var(--accent);outline-offset:6px;border-radius:2px}
+
+.builder-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px 10px;margin-top:22px;list-style:none;padding:0}
+.builder-steps li{position:relative;padding:10px 0 10px 20px;cursor:pointer;
+  font:500 12.5px/1.3 var(--body);color:var(--ink-2);border-top:1px solid var(--line);
+  transition:color .25s,border-color .25s}
+.builder-steps li::before{content:"";position:absolute;left:0;top:13px;width:9px;height:9px;
+  background:var(--line-strong);clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%);
+  transition:background-color .25s,transform .25s var(--ease-out)}
+.builder-steps li:hover{color:var(--ink)}
+.builder-steps li.on{color:var(--ink);border-color:var(--accent)}
+.builder-steps li.on::before{background:var(--accent);transform:rotate(90deg)}
+.builder-steps li:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media (min-width:768px){
+  .builder-steps{grid-template-columns:repeat(8,1fr)}
+  .builder-label{left:24px;bottom:20px}
+  .builder-count{right:24px;top:20px}
+}
+
+/* ---------------------------------------------------------------- header over a bright film
+   The film's sky is bright at every stage, so the header runs its dark treatment over it.
+   The outline pill has to follow that tone or it disappears into the sky. */
+.site-header.on-light .btn-outline,
+.site-header.on-light .menu-btn{color:var(--ground)}
+.site-header.on-light .btn-outline{border-color:var(--ground);border-width:2px}
+.site-header.on-light .btn-outline:hover{background:color-mix(in srgb,var(--ground) 12%,transparent)}
+/* over the film the chrome sits on photography, so give it the same shadow the wordmark gets */
+.site-header:not(.solid) .btn-outline{text-shadow:0 1px 10px rgba(255,255,255,.35)}
+.site-header.solid .btn-outline{text-shadow:none}
+
+/* ---------------------------------------------------------------- beat legibility
+   The film runs from a bright overcast sky to a pale grey house, so a centred radial scrim
+   shows up as a smudge in the sky and still leaves white text weak over the siding.
+   A bottom-anchored wedge sits where the beats actually are and never crosses the sky. */
+/* The full-width vignette on the stage carries the vertical darkening. It has no edges to show
+   because it spans the whole frame. */
+.film-vignette{background:linear-gradient(to top,
+  rgba(9,9,8,.80) 0%,
+  rgba(9,9,8,.58) 16%,
+  rgba(9,9,8,.26) 36%,
+  rgba(9,9,8,.06) 58%,
+  rgba(9,9,8,0) 74%) !important}
+
+/* The per-beat layer only adds a soft wedge from the left, and it fades out well inside its own
+   box, so the box never shows a hard edge. A vertical gradient here would, because the beat is
+   only 640px wide on desktop and the darkening would stop dead at that line. */
+.film-stage .beat::before{
+  inset:auto -20% -40% -40% !important;
+  height:150% !important;
+  background:linear-gradient(to right,
+    rgba(8,8,6,.52) 0%,
+    rgba(8,8,6,.34) 30%,
+    rgba(8,8,6,.14) 56%,
+    rgba(8,8,6,0) 80%) !important;
+}
+@media (max-width:767px){
+  .film-stage .beat::before{
+    inset:auto -30% -40% -30% !important;
+    background:linear-gradient(to top,
+      rgba(8,8,6,.5) 0%,rgba(8,8,6,.28) 40%,rgba(8,8,6,0) 78%) !important;
+  }
+}
+
+/* Small type over a bright overcast sky needs its own backing, not a wider scrim. */
+.film-stage .beat .kicker{
+  color:#fff;
+  display:inline-flex;
+  padding:5px 10px 5px 8px;
+  margin-left:-8px;
+  border-radius:2px;
+  background:rgba(10,10,8,.5);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  text-shadow:0 1px 3px rgba(5,5,4,.9);
+}
+
+/* ---------------------------------------------------------------- film stage readout */
+.film-readout .stage-name{font:500 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;opacity:.8}
+.film-readout .ticks{display:flex;gap:4px;align-items:flex-end;height:14px}
+.film-readout .tick{display:block;width:3px;height:7px;background:currentColor;opacity:.28;
+  transition:opacity .35s var(--ease-out),height .35s var(--ease-out),background-color .35s}
+.film-readout .tick.on{opacity:.7}
+.film-readout .tick.now{opacity:1;height:14px;background:var(--accent)}
+@media (max-width:600px){.film-readout .stage-name{display:none}}
+
+/* ---------------------------------------------------------------- services list
+   The one-column layout lives in styles.css. Below 1100px the split leaves the column too
+   narrow for a name and its tag side by side, so the tag steps out rather than wrap. */
+@media (min-width:768px) and (max-width:1099px){
+  .services li .tag{display:none}
+}
+
+/* ---------------------------------------------------------------- work photos on touch
+   The grid desaturates and returns to colour on hover, which is a good desktop move and a bad
+   phone one: there is no hover on a phone, so every photo would stay grey. For a renovation
+   company the finishes are the product, so on a touch device the photos stay in colour. */
+@media (hover:none),(pointer:coarse){
+  .work-grid img{filter:none !important}
+}
+/* a fine-pointer visitor still gets colour on the focused card, not only the hovered one */
+.work-grid button:focus-visible img{filter:none}
+
+/* ---------------------------------------------------------------- work filter */
+.work-filter{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.work-filter button{min-height:40px;padding:0 15px;border:1px solid var(--line-strong);border-radius:999px;
+  background:transparent;color:var(--ink-2);font:500 13.5px/1 var(--body);
+  transition:color .22s,border-color .22s,background-color .22s,transform .18s var(--ease-out)}
+.work-filter button:hover{color:var(--ink);border-color:var(--ink-2)}
+.work-filter button:active{transform:translateY(1px)}
+.work-filter button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.work-grid figure.hide{display:none}
+
+/* ---------------------------------------------------------------- sticky call bar (phones) */
+.call-bar{position:fixed;left:0;right:0;bottom:0;z-index:48;display:none;
+  gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--ground) 92%,transparent);
+  border-top:1px solid var(--line);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transform:translateY(110%);transition:transform .38s var(--ease-out)}
+.call-bar.show{transform:none}
+.call-bar .btn{flex:1;min-height:48px}
+.call-bar .btn-outline{flex:0 0 auto;padding:0 16px}
+@media (max-width:767px){.call-bar{display:flex}body{padding-bottom:0}}
+@media (max-width:767px){body.menu-open .call-bar{transform:translateY(110%)}}
+
+/* ---------------------------------------------------------------- open now badge */
+[data-open-state]{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+  font:500 11.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;border:1px solid}
+[data-open-state]::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+[data-open-state="open"]{color:var(--success);border-color:color-mix(in srgb,var(--success) 45%,transparent);
+  background:color-mix(in srgb,var(--success) 12%,transparent)}
+[data-open-state="closed"]{color:var(--ink-2);border-color:var(--line-strong)}
+
+/* ---------------------------------------------------------------- copy button */
+.copy-btn{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 12px;
+  border:1px solid var(--line-strong);border-radius:2px;background:transparent;color:var(--ink-2);
+  font:500 11.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+  transition:color .2s,border-color .2s,background-color .2s}
+.copy-btn:hover{color:var(--ink);border-color:var(--ink-2)}
+.copy-btn.copied{color:var(--success);border-color:color-mix(in srgb,var(--success) 50%,transparent)}
+@media (pointer:coarse){.copy-btn{display:none}}
+
+/* ---------------------------------------------------------------- job chips */
+.job-chips{display:flex;flex-wrap:wrap;gap:8px}
+.job-chips button{min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:999px;
+  background:transparent;color:var(--ink-2);font:500 13px/1 var(--body);
+  transition:color .2s,border-color .2s,background-color .2s,transform .16s var(--ease-out)}
+.job-chips button:hover{color:var(--ink);border-color:var(--ink-2)}
+.job-chips button:active{transform:translateY(1px)}
+.job-chips button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.job-chips-label{display:block;margin-bottom:10px;
+  font:500 12.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+
+/* ---------------------------------------------------------------- lightbox navigation */
+.lightbox .nav-btn{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;
+  display:grid;place-items:center;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:2px;
+  background:rgba(12,12,10,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  transition:background-color .2s,border-color .2s,transform .2s var(--ease-out)}
+.lightbox .nav-btn:hover{background:rgba(12,12,10,.8);border-color:rgba(255,255,255,.6)}
+.lightbox .prev{left:12px}
+.lightbox .next{right:12px}
+.lightbox .prev:hover{transform:translateY(-50%) translateX(-3px)}
+.lightbox .next:hover{transform:translateY(-50%) translateX(3px)}
+.lightbox .nav-btn svg{width:20px;height:20px}
+.lightbox .count{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
+  font:500 11.5px/1 var(--mono);letter-spacing:.12em;color:rgba(255,255,255,.75)}
+@media (max-width:600px){.lightbox .nav-btn{width:46px;height:46px}.lightbox .prev{left:6px}.lightbox .next{right:6px}}
+
+/* ---------------------------------------------------------------- cursor spotlight */
+[data-spot]{position:relative;isolation:isolate}
+[data-spot]::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;
+  transition:opacity .3s var(--ease-out);
+  background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--accent) 13%,transparent),transparent 70%)}
+[data-spot]:hover::after{opacity:1}
+@media (pointer:coarse){[data-spot]::after{display:none}}
+
+/* ---------------------------------------------------------------- fixes from the review pass */
+
+/* The gold accent is made for the dark ground. On the one pale section it drops to 1.6:1, so the
+   marks there use the ink colour instead and the section keeps its own accent for anything active. */
+.section.light{--accent:#8A6A00;--accent-soft:rgba(138,106,0,.14)}
+.section.light .label .n,
+.section.light .steps .n::before{color:var(--ink);background:var(--ink)}
+.section.light .steps .n::before{background:#8A6A00}
+
+/* Form fields were overriding the site's 3px accent focus ring with a much weaker one. */
+.field input:focus-visible,
+.field textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
+.field input:focus:not(:focus-visible),
+.field textarea:focus:not(:focus-visible){outline:none}
+
+/* Touch targets: nothing a finger has to hit goes under 44px. */
+@media (pointer:coarse){
+  .btn-call,.btn-quote,
+  .work-filter button,
+  .job-chips button,
+  .builder-steps li{min-height:44px}
+  .builder-steps li{display:flex;align-items:center}
+  .area-list li{min-height:44px;display:inline-flex;align-items:center}
+}
+
+/* The slider thumb sat at 2.8:1 against its own track. A dark ring lifts it clear on any stage. */
+.builder-range::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--ground),0 2px 12px rgba(0,0,0,.55)}
+.builder-range::-moz-range-thumb{box-shadow:0 0 0 2px var(--ground),0 2px 12px rgba(0,0,0,.55)}
+
+/* The call bar must not sit over the footer's fine print at the very bottom of the page. */
+body{padding-bottom:0}
+@media (max-width:767px){
+  .site-footer{padding-bottom:calc(32px + 72px)}
+}
+
+/* ---------------------------------------------------------------- reduced motion */
+@media (prefers-reduced-motion:reduce){
+  .call-bar,.builder-range::-webkit-slider-thumb,.lightbox .nav-btn,[data-spot]::after{transition:none !important}
+  .call-bar{transform:none}
+}
+body.rm .call-bar{transition:none}

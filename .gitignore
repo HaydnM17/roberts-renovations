@@ -1,0 +1,29 @@
+# Agent working notes, internal and not part of the site
+CLAUDE.md
+
+# Local Claude Code settings and project skills, machine specific
+.claude/
+
+# Design handoff bundle, reference only, never shipped
+design_handoff/
+
+# Brief, scope, checklist, DNS exports, PageSpeed screenshots: private to the project
+docs/
+
+# Standalone single-file builds, regenerated on demand
+dist/
+
+# Headless capture harnesses and screenshots, made and deleted by the screenshot recipe
+_cap*.html
+_mob-*.html
+_*.png
+
+# Editor state
+.vs/
+.vscode/
+.idea/
+
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store

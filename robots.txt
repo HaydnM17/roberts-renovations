@@ -1,0 +1,7 @@
+# Spec mockup, not yet approved by the client: block every crawler while it is
+# only up for review. At launch, once the client has agreed to the site, change
+# "Disallow: /" to "Allow: /" and update the Sitemap line to the live domain.
+User-agent: *
+Disallow: /
+
+Sitemap: https://roberts-renovations.pages.dev/sitemap.xml
