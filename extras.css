@@ -59,49 +59,78 @@
 .site-header.solid .btn-outline{text-shadow:none}
 
 /* ---------------------------------------------------------------- beat legibility
-   The film runs from a bright overcast sky to a pale grey house, so a centred radial scrim
-   shows up as a smudge in the sky and still leaves white text weak over the siding.
-   A bottom-anchored wedge sits where the beats actually are and never crosses the sky. */
-/* The full-width vignette on the stage carries the vertical darkening. It has no edges to show
-   because it spans the whole frame. */
-.film-vignette{background:linear-gradient(to top,
-  rgba(9,9,8,.80) 0%,
-  rgba(9,9,8,.58) 16%,
-  rgba(9,9,8,.26) 36%,
-  rgba(9,9,8,.06) 58%,
-  rgba(9,9,8,0) 74%) !important}
+   Diagnosis: the old per-beat scrim was a box (`.beat::before`) inset by a percentage of the
+   beat's own width, with a linear-gradient that started at FULL opacity right at that box's own
+   edge. Wherever that box's top edge landed inside the frame (it isn't full-bleed, so it often
+   does), the paint stopped dead: scrim on one side of the line, none on the other. That hard
+   rectangle is exactly the "black background with a line cut off" the client is seeing, worst
+   over the pale siding where there is nothing to hide it in.
+   Fix: every layer below is full-bleed (`inset:0` on the whole stage) so its own box edge is the
+   photo's edge, never a line drawn across the middle of it, and every gradient reaches true zero
+   opacity well inside its own bounds rather than stopping abruptly. Combined with layered
+   text-shadow (no box at all) on the type itself, there is nothing left that can show an edge,
+   whatever image or video ends up in `.film-canvas`. */
 
-/* The per-beat layer only adds a soft wedge from the left, and it fades out well inside its own
-   box, so the box never shows a hard edge. A vertical gradient here would, because the beat is
-   only 640px wide on desktop and the darkening would stop dead at that line. */
-.film-stage .beat::before{
-  inset:auto -20% -40% -40% !important;
-  height:150% !important;
-  background:linear-gradient(to right,
-    rgba(8,8,6,.52) 0%,
-    rgba(8,8,6,.34) 30%,
-    rgba(8,8,6,.14) 56%,
-    rgba(8,8,6,0) 80%) !important;
-}
-@media (max-width:767px){
-  .film-stage .beat::before{
-    inset:auto -30% -40% -30% !important;
-    background:linear-gradient(to top,
-      rgba(8,8,6,.5) 0%,rgba(8,8,6,.28) 40%,rgba(8,8,6,0) 78%) !important;
-  }
-}
+/* Full-bleed vertical vignette, stronger and reaching higher so it still has something left at
+   the top of a four-line heading, then genuinely clears to nothing well before the sky. */
+.film-vignette{background:
+  radial-gradient(ellipse 75% 60% at 26% 96%,rgba(8,8,6,.34) 0%,rgba(8,8,6,.16) 45%,rgba(8,8,6,0) 78%),
+  linear-gradient(to top,
+    rgba(9,9,8,.84) 0%,
+    rgba(9,9,8,.64) 18%,
+    rgba(9,9,8,.38) 36%,
+    rgba(9,9,8,.16) 54%,
+    rgba(9,9,8,0) 74%) !important}
 
-/* Small type over a bright overcast sky needs its own backing, not a wider scrim. */
+/* The old box-based per-beat wedge is removed outright rather than re-tuned: any inset box that
+   doesn't span the whole frame can, by construction, land its edge in view. The vignette above
+   plus the text-shadow below carry contrast instead, with nothing left that can draw a line. */
+.film-stage .beat::before{content:none !important}
+
+/* Layered text-shadow, no box: a tight dark contour that defines the letterforms, a close glow
+   that does the heavy lifting over bright sky, and a wide soft falloff that reads as ambient
+   shade rather than a printed shape. A hairline stroke backs it up on the headline specifically,
+   the largest, palest type and the one over the brightest part of every frame. */
+.film-stage .beat-line,
+.film-stage .beat h1,
+.film-stage .beat-hero .lede,
+.film-stage .beat .lede{
+  text-shadow:
+    0 1px 2px rgba(5,5,4,.95),
+    0 2px 9px rgba(5,5,4,.88),
+    0 18px 48px rgba(5,5,4,.72);
+}
+.film-stage .beat h1{-webkit-text-stroke:.4px rgba(5,5,4,.4)}
+
+/* Small type over a bright overcast sky needs its own backing, not a wider scrim. This chip
+   reads as a deliberate label rather than an artifact because it is small, fully opaque behind
+   the blur and consistently shaped, not a translucent box guessing at where the sky is. */
 .film-stage .beat .kicker{
   color:#fff;
   display:inline-flex;
   padding:5px 10px 5px 8px;
   margin-left:-8px;
+  margin-bottom:16px;
   border-radius:2px;
-  background:rgba(10,10,8,.5);
+  background:rgba(10,10,8,.58);
   backdrop-filter:blur(6px);
   -webkit-backdrop-filter:blur(6px);
   text-shadow:0 1px 3px rgba(5,5,4,.9);
+}
+
+/* ---------------------------------------------------------------- hero type
+   Four lines at 800 weight and a 92px cap read as shouting. Dropping the weight one notch,
+   opening the line-height so the lines breathe, and trimming the measure and the size ceiling
+   keeps the same words but lets them sit calm and confident instead of filling the screen. */
+.film-stage .beat h1{
+  font-weight:700;
+  font-size:clamp(32px,8.6vw,54px);
+  line-height:1.08;
+  letter-spacing:-.02em;
+}
+.film-stage .beat-hero .row{margin-top:26px}
+@media (min-width:768px){
+  .film-stage .beat h1{font-size:clamp(46px,5vw,70px);line-height:1.06;letter-spacing:-.025em}
 }
 
 /* ---------------------------------------------------------------- film stage readout */
@@ -203,13 +232,27 @@
 [data-spot]:hover::after{opacity:1}
 @media (pointer:coarse){[data-spot]::after{display:none}}
 
+/* ---------------------------------------------------------------- section label row
+   Give the small square before the label the site's own cross motif (the header mark, the rule
+   ends, the step numbers all use it) instead of a plain dot, so the label row reads as one more
+   place the same mark shows up rather than a generic bullet. A touch more weight and spacing on
+   the row itself makes it read as a deliberate index mark, not an afterthought. */
+.label{gap:13px;font-weight:600;letter-spacing:.12em}
+.label::before{
+  width:9px;height:9px;
+  clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%);
+}
+.label .n{font-variant-numeric:tabular-nums}
+
 /* ---------------------------------------------------------------- fixes from the review pass */
 
 /* The gold accent is made for the dark ground. On the one pale section it drops to 1.6:1, so the
    marks there use the ink colour instead and the section keeps its own accent for anything active. */
 .section.light{--accent:#8A6A00;--accent-soft:rgba(138,106,0,.14)}
-.section.light .label .n,
-.section.light .steps .n::before{color:var(--ink);background:var(--ink)}
+/* Bug from an earlier pass: this rule painted the label's own number ("04") in the ink colour on
+   an ink-coloured background, so it rendered as a solid dark chip with the digits invisible
+   inside it, right in the middle of the label row. Colour only; no background on real text. */
+.section.light .label .n{color:var(--ink)}
 .section.light .steps .n::before{background:#8A6A00}
 
 /* Form fields were overriding the site's 3px accent focus ring with a much weaker one. */
