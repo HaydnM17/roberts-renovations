@@ -1,0 +1,110 @@
+/* Roberts Renovations, the switch divider.
+   Owned by the divider agent. Styles only:
+   <div class="switch" aria-hidden="true">
+     <span class="switch-rule"></span>
+     <span class="switch-mark"></span>
+     <span class="switch-rule"></span>
+   </div>
+   .switch sits in normal flow between two sections, over the fixed .env video layer. It marks the
+   point where the build film hands over to the orbit loop.
+
+   The band is a solid ground-coloured curtain, not a translucent one. The orbit loop behind the
+   rest of the page is already heavily veiled (ambient.css keeps it under 20% contribution), so a
+   flat --ground fill sits almost flush with what follows; against the crisp, saturated build film
+   that precedes it, the same fill is a clean, deliberate cut rather than a hopeful overlay. A
+   glass panel was tried in reasoning first and dropped: at full saturation the build film can hit
+   a bright overcast sky, and text or a thin line laid over that with only blur and alpha between
+   them is exactly the "flat background" gamble the brief warns against. A solid fill has no such
+   failure mode; it reads correctly against any frame, moving or not.
+
+   The one gold mark sits in the middle, in a ring, on its own halo, quiet lines either side. That
+   is the whole idea: the accent gets to matter once, at the one point on the page built to be a
+   transition, and nowhere else near it competes with it. */
+
+.switch{
+  position:relative; /* .env is fixed and first in the body; unpositioned siblings have lost this
+                         fight before (see site-footer in styles.css). Cheap insurance. */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(14px,3vw,26px);
+  padding:clamp(34px,6.5vw,54px) var(--pad);
+  background:var(--ground);
+  pointer-events:none;
+}
+.switch::before,.switch::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;
+  height:0;
+  border-top:1px dashed var(--line);
+}
+.switch::before{top:0}
+.switch::after{bottom:0}
+
+/* ---- the two rules -------------------------------------------------------------------------
+   Together they read as one dashed line spanning the band, broken by the mark in the middle,
+   the same relationship .rule has with its own two end-marks turned inside out: there the cross
+   sits at each end of a line, here it sits at the one point that matters and the line falls away
+   on both sides of it. Capped short of the full width on a wide screen so the mark keeps a fixed,
+   legible companion rather than floating alone between two very long strokes. */
+.switch-rule{
+  flex:1 1 auto;
+  min-width:16px;
+  max-width:300px;
+  height:0;
+  border-top:1px dashed var(--line);
+}
+.switch-rule:first-child{transform-origin:100% 50%}
+.switch-rule:last-child{transform-origin:0% 50%}
+
+/* ---- the mark --------------------------------------------------------------------------------
+   A ring in the strong hairline colour, the gold cross inset inside it, a soft static halo behind
+   both. The ring and the halo never move; only the entrance (below) animates, and only once. */
+.switch-mark{
+  position:relative;
+  flex:0 0 auto;
+  width:clamp(18px,3.2vw,24px);
+  height:clamp(18px,3.2vw,24px);
+  border:1px solid var(--line-strong);
+  border-radius:50%;
+}
+.switch-mark::before{
+  content:"";
+  position:absolute;
+  inset:29%;
+  background:var(--accent);
+  /* the site's own survey-cross clip, unchanged, just at a larger size than .rule or .label use */
+  clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%);
+}
+.switch-mark::after{
+  content:"";
+  position:absolute;
+  inset:-70%;
+  z-index:-1;
+  border-radius:50%;
+  background:radial-gradient(circle,var(--accent-soft) 0%,transparent 72%);
+}
+
+/* ---- entrance, optional -------------------------------------------------------------------
+   Default state above is already the resting state: full-width rules, full-size mark, no
+   transform, no opacity trick. .is-in is never required to reach that state, only to add a single
+   one-shot draw-in on the way there. animation (not transition) with fill-mode both, so the moment
+   it finishes the computed style matches the class-less default exactly, and a page that never
+   gets the class, or gets it before paint, looks identical to one that plays it. */
+.switch.is-in .switch-rule{animation:switch-rule-in .8s var(--ease-out) both}
+.switch.is-in .switch-mark{animation:switch-mark-in .5s var(--ease-out) .18s both}
+@keyframes switch-rule-in{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes switch-mark-in{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}
+
+@media (prefers-reduced-motion:reduce){
+  .switch.is-in .switch-rule,.switch.is-in .switch-mark{animation:none}
+}
+body.rm .switch.is-in .switch-rule,body.rm .switch.is-in .switch-mark{animation:none}
+
+/* Short viewports (a phone in landscape, mainly): the band is already well clear of a third of a
+   portrait screen, but this keeps it a clean, quiet pause rather than a fixed cost on the shortest
+   screens too. */
+@media (max-height:600px){
+  .switch{padding-block:22px}
+}
