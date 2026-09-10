@@ -1,0 +1,102 @@
+/* Roberts Renovations, phone film fix (agent FP).
+   Owns this file only. Linked LAST, after styles.css, extras.css, ambient.css,
+   reviews-slider.css, motion.css and mobile.css, so every rule here wins by cascade order.
+   Read but never wrote: index.html, styles.css, extras.css, mobile.css, script.js, occlude.js.
+
+   ---- the problem, and what was ruled out ----------------------------------------------------
+   The client's complaint, in his words: on a phone the film reads as "just a hero background
+   video" sitting "in the top half of the site", with "all black under it". He is right, and the
+   fix is not object-fit:cover on the full 100svh stage. Checked with real frames pulled from
+   assets/hero-film.mp4 (ffmpeg, see docs/AGENT-PHONE-LOG.md): cover-cropping the 16:9 film into a
+   390x844 portrait box keeps only the centre ~26% of every frame's width, which slices the whole
+   left side of the house and the front door clean off. Screenshot of that crop is in the log.
+   The band that already exists (styles.css, the "film on a phone" comment) avoids that by sizing
+   a 16:9 box (same aspect as the source, so object-fit:cover inside it crops nothing) at 164% of
+   the viewport width, and letting the stage's own overflow:hidden trim the sides instead. Measured
+   the actual visible window that produces against the house's real extent in the footage: the
+   house is not merely inside it, it is within about 20px of the RIGHT edge of it already. There
+   is no slack left to make that band wider (or taller, since width and height are locked together
+   at 16:9) without starting to cut the house. So the sharp band's own size and crop are correct
+   and untouched here.
+
+   ---- what actually is the problem, and the fix ----------------------------------------------
+   The band only fills ~43% of the screen's height. Above it (11svh) and below it (everything down
+   to the next section, where the caption sits) is flat --ground with nothing in it, which is
+   exactly what reads as "just a strip of video on a black page". The fix here is the letterbox
+   fill every video app uses for this: a blurred, heavily darkened copy of the film's own imagery
+   filling the WHOLE stage behind the sharp band, so the eye reads one continuous, textured scene
+   rather than a bright rectangle floating on nothing. Never a second <video>: that would double
+   decode load on a phone that already decodes hero-film.mp4 (and, a screen later, orbit.mp4). This
+   is a single static <img>'s worth of cost, and on the live/building state it is not even that:
+   assets/film-first.jpg is the same file already sitting in the DOM as .film-poster's own src
+   (index.html), so the browser has already fetched it by the time this paints. Nothing new is
+   downloaded for that state. Only the reduced-motion/still state (below) pulls a second file, and
+   it does that because script.js already pulls that exact file for the sharp poster at that point
+   anyway, so again nothing new.
+
+   Known, accepted cost: this backdrop is a still frame, not the live video. During a normal scroll
+   the sharp band builds from an empty lot to a finished house; this backdrop stays on film-first's
+   empty lot the whole time. It is blurred past the point of being a recognisable scene (see the
+   contrast workings below, which assume the worst realistic pixel in the whole file, not just this
+   one frame) so it reads as tone and light rather than a specific mismatched moment, but it is a
+   real trade-off and is called out here rather than hidden. Could not verify how it reads against
+   the live video itself, only against the poster frames headless capture can show; see the log. */
+
+@media (max-width:767px){
+
+  /* One pseudo-element, three jobs: the blurred/darkened copy of the frame, the veil that makes
+     the darkening predictable rather than "trust the blur", and the mask that fades it to nothing
+     at the very top and bottom edges of the stage so it is a soft field, not a filled rectangle
+     with its own hard edge. Sits behind film-poster/film-video/film-fg (both are position:absolute
+     with no z-index, so as the first thing painted for .film-stage they paint under them by source
+     order alone; .film-stage::after, at z-index:2 in styles.css, and everything above it, stay
+     above this too since explicit z-index always beats the auto/0 bucket this sits in). Does not
+     touch film-poster/film-video/film-fg or their shared rule in styles.css at all: they are not
+     read here, let alone written. */
+  .film-stage::before{
+    content:"";
+    position:absolute;inset:0;z-index:0;
+    pointer-events:none;
+    background-repeat:no-repeat;
+    background-size:cover;
+    background-position:50% 50%;
+    /* The gradient is the veil, listed first so it paints on top of the photo beneath it, same
+       stack order as index.html's own listing convention (decoration first, content of it after).
+       84% ground is not a guess: worked from the single brightest pixel actually measured in
+       film-first.jpg (255,255,255, a blown highlight in the overcast sky, brighter even than the
+       240 the desktop orbit-veil's own comment assumes for its footage) forward to a floor, not
+       backward from a look. See the log for the full table; at this alpha even that pixel, veiled,
+       still clears --ink-2 on it at 5.76:1 against the 4.5:1 floor. The averaged frame, which is
+       what a viewer actually sees once this is blurred, sits far under that, nowhere near the
+       floor. */
+    background-image:
+      linear-gradient(color-mix(in srgb,var(--ground) 84%,transparent),
+                       color-mix(in srgb,var(--ground) 84%,transparent)),
+      url(assets/film-first.jpg);
+    /* Blur this hard: the point is a soft field of tone and light, not a recognisable second copy
+       of the photo. saturate pulls it further toward the ground/ink palette instead of competing
+       with it, the same move ambient.css already makes for the orbit film for the same reason. */
+    filter:blur(34px) saturate(.4);
+    -webkit-mask-image:linear-gradient(to bottom,
+      transparent 0,rgba(0,0,0,.8) 9%,#000 18%,
+      #000 88%,rgba(0,0,0,.7) 96%,transparent 100%);
+    mask-image:linear-gradient(to bottom,
+      transparent 0,rgba(0,0,0,.8) 9%,#000 18%,
+      #000 88%,rgba(0,0,0,.7) 96%,transparent 100%);
+  }
+  /* film.static is the reduced-motion/?still=1/frame-load-failed path (script.js's goStatic()):
+     no video ever plays, poster.src is swapped to poster-d.jpg (the finished house) and stays
+     there. Swapping this backdrop to the same file means the still hero pairs a blurred copy of
+     the exact frame the visitor is looking at, rather than the live state's necessary mismatch.
+     Costs nothing extra: goStatic() already requests poster-d.jpg for the sharp <img> the instant
+     this class lands, for the same reason. */
+  .film.static .film-stage::before{
+    background-image:
+      linear-gradient(color-mix(in srgb,var(--ground) 84%,transparent),
+                       color-mix(in srgb,var(--ground) 84%,transparent)),
+      url(assets/poster-d.jpg);
+  }
+
+  /* No motion is added by this file: the backdrop is a plain background-image, never transitioned
+     or animated, so there is nothing here that prefers-reduced-motion or body.rm need to stop. */
+}
