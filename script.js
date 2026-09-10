@@ -113,14 +113,22 @@
     seekBusy = true;
     try { video.currentTime = t; } catch (e) { seekBusy = false; }
   }
-  /* the occluding canvas only ever needs repainting when the frame under it actually changed */
-  function occlUpdate() {
-    if (win.RROcclude && win.RROcclude.ok) win.RROcclude.update();
+  /* The occluding canvas only needs repainting when the frame under it actually changed. On a
+     seek that is once per landed seek, which is already the right rate. During the opening run it
+     would otherwise be called on every animation frame, so it is held to the film's own 24fps:
+     painting the same frame twice costs a full pixel walk and buys nothing. */
+  var lastOccl = 0;
+  function occlUpdate(force) {
+    if (!win.RROcclude || !win.RROcclude.ok) return;
+    var now = performance.now();
+    if (!force && now - lastOccl < 38) return;
+    lastOccl = now;
+    win.RROcclude.update();
   }
 
   on(video, "seeked", function () {
     seekBusy = false;
-    occlUpdate();
+    occlUpdate(true);   /* a landed seek is always a new frame, and the gate already rate-limits it */
     if (pendingTime !== null) { var t = pendingTime; pendingTime = null; requestSeek(t); }
   });
   on(video, "error", function () {

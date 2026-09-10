@@ -51,7 +51,7 @@
 
   var video = null, canvas = null, ctx = null, small = null, sctx = null;
   var armed = false, enabled = true;
-  var rowAlpha = null;
+  var rowAlpha = null, wash = null;
 
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
   function smooth(k) { return k * k * (3 - 2 * k); }
@@ -111,12 +111,28 @@
       if (canvas.width !== video.videoWidth) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        wash = null;   /* the gradient is built against a height that just changed */
       }
       ctx.globalCompositeOperation = "source-over";
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       ctx.globalCompositeOperation = "destination-in";
       ctx.drawImage(small, 0, 0, canvas.width, canvas.height);
+
+      /* The scrim in the stylesheet sits under this canvas, so it darkens the video but not the
+         copy of the house drawn here, and the house would read brighter than the sky it stands
+         in. Painting the same wash straight onto what survived the matte puts the two back in
+         step. source-atop keeps it inside the matte, so it never spills into the keyed sky.
+         These stops mirror .film-scrim's linear gradient in styles.css: change one, change both. */
+      if (!wash) {
+        wash = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        wash.addColorStop(0, "rgba(10,10,12,.52)");
+        wash.addColorStop(0.32, "rgba(10,10,12,.18)");
+        wash.addColorStop(0.54, "rgba(10,10,12,0)");
+      }
+      ctx.globalCompositeOperation = "source-atop";
+      ctx.fillStyle = wash;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.globalCompositeOperation = "source-over";
     } catch (e) {
       /* a tainted canvas never untaints, and anything else reaching here is just as unrecoverable
