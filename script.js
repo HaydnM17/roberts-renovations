@@ -953,18 +953,62 @@
     var msg = $("#f-msg");
     var openedAt = Date.now();
 
+    /* The chips keep a comma list at the head of the message, so whatever the visitor picks is
+       already written for them and they can still edit it by hand. */
+    var otherChip = $('[data-job="Other"]', form);
+    var otherField = $("#other-field");
+    var otherInput = $("#f-other");
+    var otherLast = "";           /* what this field last contributed, so it can be swapped out */
+
+    function msgParts() {
+      if (!msg) return [];
+      return msg.value.split(/,\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+    /* Replace one entry with another in place, rather than removing and appending, so editing the
+       free-text box does not keep shunting it to the end of the list while somebody is typing. */
+    function swapPart(oldV, newV) {
+      if (!msg) return;
+      var parts = msgParts();
+      var i = oldV ? parts.indexOf(oldV) : -1;
+      if (i > -1) {
+        if (newV) parts[i] = newV; else parts.splice(i, 1);
+      } else if (newV && parts.indexOf(newV) === -1) {
+        parts.push(newV);
+      }
+      msg.value = parts.join(", ");
+    }
+
     $$("[data-job]").forEach(function (chip) {
+      if (chip === otherChip) return;   /* wired below, it has a field to open */
       on(chip, "click", function () {
         if (!msg) return;
         var v = chip.dataset.job;
         var pressed = chip.getAttribute("aria-pressed") === "true";
         chip.setAttribute("aria-pressed", pressed ? "false" : "true");
-        var parts = msg.value.split(/,\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
-        var idx = parts.indexOf(v);
-        if (pressed && idx > -1) parts.splice(idx, 1);
-        else if (!pressed && idx === -1) parts.push(v);
-        msg.value = parts.join(", ");
+        swapPart(pressed ? v : null, pressed ? null : v);
       });
+    });
+
+    function setOther(on_) {
+      if (!otherChip || !otherField) return;
+      otherChip.setAttribute("aria-pressed", on_ ? "true" : "false");
+      otherChip.setAttribute("aria-expanded", on_ ? "true" : "false");
+      otherField.hidden = !on_;
+      if (on_) {
+        if (otherInput) otherInput.focus();
+      } else {
+        swapPart(otherLast, null);
+        otherLast = "";
+        if (otherInput) { otherInput.value = ""; showError(otherInput, false); }
+      }
+    }
+    on(otherChip, "click", function () {
+      setOther(otherChip.getAttribute("aria-pressed") !== "true");
+    });
+    on(otherInput, "input", function () {
+      var v = otherInput.value.trim();
+      swapPart(otherLast, v);
+      otherLast = v;
     });
 
     function showError(input, show) {
@@ -974,7 +1018,11 @@
     }
     function validate() {
       var okAll = true, first = null;
-      ["f-name", "f-contact", "f-msg"].forEach(function (id) {
+      var ids = ["f-name", "f-contact", "f-msg"];
+      /* only required while it is on screen, because a hidden field nobody can see must never be
+         the reason a form refuses to send */
+      if (otherField && !otherField.hidden) ids.push("f-other");
+      ids.forEach(function (id) {
         var input = doc.getElementById(id);
         if (!input) return;
         var bad = !input.value.trim();
@@ -993,6 +1041,9 @@
     function clearForm() {
       form.reset();
       $$("[data-job]", form).forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+      otherLast = "";
+      if (otherChip) otherChip.setAttribute("aria-expanded", "false");
+      if (otherField) otherField.hidden = true;
     }
     on(form, "input", function (e) { if (e.target.getAttribute("aria-invalid") === "true") showError(e.target, false); });
     on(form, "submit", function (e) {

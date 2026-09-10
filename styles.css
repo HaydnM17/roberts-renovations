@@ -522,6 +522,9 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .contact-grid{display:grid;gap:30px;margin-top:34px}
 .form{display:grid;gap:16px}
 .field{display:grid;gap:6px}
+/* an author display always beats the browser's own [hidden] rule, so without this the Other
+   field would be on screen the whole time whatever the attribute said */
+.field[hidden]{display:none}
 .field label{font:500 12.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .field input,.field textarea{width:100%;min-height:48px;padding:12px 14px;background:var(--ground-2);border:1px solid var(--line-strong);border-radius:2px;transition:border-color .2s,box-shadow .2s}
 .field textarea{min-height:140px;resize:vertical}

@@ -26,14 +26,14 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 <link rel="stylesheet" href="extras.css?v=3">
 <link rel="stylesheet" href="ambient.css?v=1">
 <link rel="stylesheet" href="reviews-slider.css?v=1">
 <link rel="stylesheet" href="motion.css?v=1">
 <script src="occlude.js?v=3" defer></script>
 <script src="reviews-slider.js?v=1" defer></script>
-<script src="script.js?v=8" defer></script>
+<script src="script.js?v=9" defer></script>
 <script src="motion.js?v=1" defer></script>
 <script type="application/ld+json">
 {
@@ -515,7 +515,15 @@
             <button type="button" data-job="Flooring" aria-pressed="false">Flooring</button>
             <button type="button" data-job="Deck or porch" aria-pressed="false">Deck or porch</button>
             <button type="button" data-job="Small job" aria-pressed="false">Small job</button>
+            <button type="button" data-job="Other" aria-pressed="false" aria-expanded="false" aria-controls="f-other">Other</button>
           </div>
+        </div>
+        <!-- Revealed by the Other chip. What gets typed here replaces the word Other in the
+             message above, so the visitor never has to say the same thing twice. -->
+        <div class="field field-other" id="other-field" hidden>
+          <label for="f-other">What kind of job</label>
+          <input id="f-other" name="other" type="text" autocomplete="off" aria-describedby="err-other">
+          <p class="err" id="err-other" data-for="f-other" hidden>Please say what kind of job it is.</p>
         </div>
         <div class="field">
           <label for="f-msg">What needs doing</label>
