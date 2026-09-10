@@ -400,6 +400,30 @@ body.rm .svc-tiles span::after{transform:scaleX(1) !important}
   .svc-tiles span::after{transform:scaleX(1) !important}
 }
 
+/* The picker is capped rather than running the full page width. Its pictures are the client's
+   own and the largest is 680px across, so a full width stage was drawing a 382px photograph at
+   three times its size and it showed. At 560 the worst case is about 1.5x, which reads as a
+   photograph rather than a blur. Three deep because extras.css sets .builder at one and loads
+   after this file. */
+.section .wrap .builder{max-width:560px}
+@media (min-width:900px){
+  /* on a wide screen the stage sits left and the copy beside it, so the cap does not leave a
+     small picture stranded in the middle of an empty band */
+  .section .wrap .builder{
+    max-width:none;display:grid;
+    grid-template-columns:560px minmax(0,1fr);
+    gap:0 44px;align-items:start;
+  }
+  .section .wrap .builder .builder-stage{grid-column:1;grid-row:1}
+  .section .wrap .builder .builder-range{grid-column:1;grid-row:2}
+  /* the list, the caption and the button stack down the second column against the top of the
+     picture, rather than being centred in it, which left a band of empty ground under each */
+  .section .wrap .builder .builder-steps{grid-column:2;grid-row:1;align-self:start;display:grid;gap:2px}
+  .section .wrap .builder .builder-steps li{padding:11px 0}
+  .section .wrap .builder .builder-note{grid-column:2;grid-row:1;align-self:end;margin:0 0 8px}
+  .section .wrap .builder .builder-go{grid-column:2;grid-row:2;justify-self:start;align-self:start;margin-top:0}
+}
+
 /* the picker's caption and its way into the form. The note swaps as the handle lands on each
    option, so the thing being read always matches the thing on screen. */
 .builder-note{

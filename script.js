@@ -794,7 +794,15 @@
     })(i);
 
     function bsize() {
-      var w = wrap.clientWidth, h = Math.round(w * 9 / 16);
+      /* 4:3, not 16:9. These are the client's own photographs and most of them are portrait at
+         382 by 510, so a wide frame both crops them to a letterbox slot and stretches them. The
+         stage is also capped in CSS: at full page width a 382px picture was being drawn three
+         times its own size, which is what made it look soft. */
+      /* measure the stage the canvas actually sits in, not the whole component. On a wide screen
+         the component is a two column grid and the stage is one of the columns, so measuring the
+         component gave a height for a width the canvas never had. */
+      var host = $(".builder-stage", wrap) || wrap;
+      var w = host.clientWidth || wrap.clientWidth, h = Math.round(w * 3 / 4);
       var dpr = Math.min(2, win.devicePixelRatio || 1);
       if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
       cv.style.height = h + "px";
