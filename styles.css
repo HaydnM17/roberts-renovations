@@ -400,6 +400,14 @@ body.rm .svc-tiles span::after{transform:scaleX(1) !important}
   .svc-tiles span::after{transform:scaleX(1) !important}
 }
 
+/* the picker's caption and its way into the form. The note swaps as the handle lands on each
+   option, so the thing being read always matches the thing on screen. */
+.builder-note{
+  margin-top:14px;font-size:15px;line-height:1.5;color:var(--ink-2);
+  max-width:52ch;min-height:2.6em;text-wrap:pretty;
+}
+.builder-go{margin-top:16px}
+
 /* ---- what each service involves ----------------------------------------------------------
    The tiles above say what they do. This says what that actually means, which is the thing a
    homeowner is looking for. Cards rather than a table, because the lengths differ a lot. */

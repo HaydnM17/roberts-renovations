@@ -26,11 +26,11 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=14">
 <link rel="stylesheet" href="extras.css?v=3">
 <link rel="stylesheet" href="ambient.css?v=1">
 <script src="occlude.js?v=3" defer></script>
-<script src="script.js?v=7" defer></script>
+<script src="script.js?v=8" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -88,6 +88,7 @@
   <nav class="nav" aria-label="Sections">
     <a href="#services">Services</a>
     <a href="#work">Work</a>
+    <a href="#pick">Start here</a>
     <a href="#process">How it goes</a>
     <a href="#reviews">Reviews</a>
     <a href="#contact">Contact</a>
@@ -318,9 +319,43 @@
   </div>
 </section>
 
-<section class="section light" id="process" data-n="03">
+<!-- The drag mechanic from the old house-build slider, pointed at something true. Every frame is
+     one of their own photographs, the label names the work in it, and the button carries that
+     choice into the contact form so the visitor does not have to describe it twice. This is a
+     picker, not a gallery: the gallery is the work grid above. -->
+<section class="section" id="pick" data-n="03">
   <div class="wrap">
-    <p class="label"><span class="n">03</span><span>How it goes</span></p>
+    <p class="label"><span class="n">03</span><span>Start here</span></p>
+    <div class="title-block">
+      <h2>Drag to the job you have.</h2>
+      <p class="lede">Six of the things we get called for most. Land on yours and start a request with it already filled in.</p>
+    </div>
+    <div class="builder" id="builder" data-spot>
+      <div class="builder-stage">
+        <canvas aria-hidden="true"></canvas>
+        <p class="builder-label">Bathroom</p>
+      </div>
+      <label class="visually-hidden" for="builder-range">Choose the kind of job</label>
+      <input class="builder-range" id="builder-range" type="range" min="0" max="100" value="0" step="1"
+             aria-describedby="builder-desc">
+      <p class="visually-hidden" id="builder-desc">Drag to move between the kinds of work we take on.</p>
+      <ol class="builder-steps">
+        <li role="button" tabindex="0" aria-current="true"  data-img="assets/shower-white-subway.jpg" data-job="Bathroom" data-note="Tear-out, waterproofing, tile, vanity and fixtures.">Bathroom</li>
+        <li role="button" tabindex="0" aria-current="false" data-img="assets/kitchen-white-shaker.jpg" data-job="Kitchen" data-note="Cabinets, counters and backsplash, with the floor and lighting around them.">Kitchen</li>
+        <li role="button" tabindex="0" aria-current="false" data-img="assets/floor-tile.jpg" data-job="Tile" data-note="Floors, walls and showers, set on a base that gets levelled first.">Tile</li>
+        <li role="button" tabindex="0" aria-current="false" data-img="assets/vinyl-plank-floor.jpg" data-job="Flooring" data-note="Plank and tile, over a subfloor that gets repaired before it goes down.">Flooring</li>
+        <li role="button" tabindex="0" aria-current="false" data-img="assets/commercial-drywall.jpg" data-job="Drywall" data-note="New board, patches and taping, sanded ready for paint.">Drywall</li>
+        <li role="button" tabindex="0" aria-current="false" data-img="assets/deck-pergola.jpg" data-job="Deck or porch" data-note="Decks, porches, canopies and the framing that carries them.">Outside</li>
+      </ol>
+      <p class="builder-note" id="builder-note">Tear-out, waterproofing, tile, vanity and fixtures.</p>
+      <button class="btn btn-primary builder-go" type="button" data-go>Start a request for this</button>
+    </div>
+  </div>
+</section>
+
+<section class="section light" id="process" data-n="04">
+  <div class="wrap">
+    <p class="label"><span class="n">04</span><span>How it goes</span></p>
     <div class="title-block">
       <!-- Generalised on purpose. Nobody has confirmed this company's actual process, so nothing
            here promises a free quote, a schedule, a cleanup policy or an order of work. It
@@ -338,9 +373,9 @@
   </div>
 </section>
 
-<section class="section panel" id="reviews" data-n="04">
+<section class="section panel" id="reviews" data-n="05">
   <div class="wrap">
-    <p class="label"><span class="n">04</span><span>Google reviews</span></p>
+    <p class="label"><span class="n">05</span><span>Google reviews</span></p>
     <div class="title-block">
       <div>
         <p class="stars" aria-label="Five stars">
@@ -372,9 +407,9 @@
   </div>
 </section>
 
-<section class="section" id="about" data-n="05">
+<section class="section" id="about" data-n="06">
   <div class="wrap">
-    <p class="label"><span class="n">05</span><span>About us</span></p>
+    <p class="label"><span class="n">06</span><span>About us</span></p>
     <div class="split split-reverse">
       <div class="split-content about">
         <h2>A renovation company based in Beamsville.</h2>
@@ -389,9 +424,9 @@
   </div>
 </section>
 
-<section class="section" id="area" data-n="06">
+<section class="section" id="area" data-n="07">
   <div class="wrap">
-    <p class="label"><span class="n">06</span><span>Where we work</span></p>
+    <p class="label"><span class="n">07</span><span>Where we work</span></p>
     <div class="title-block">
       <h2>Based in Beamsville, Ontario.</h2>
       <p class="lede">Call to check if we cover your address.</p>
@@ -402,9 +437,9 @@
   </div>
 </section>
 
-<section class="section" id="faq" data-n="07">
+<section class="section" id="faq" data-n="08">
   <div class="wrap">
-    <p class="label"><span class="n">07</span><span>Questions</span></p>
+    <p class="label"><span class="n">08</span><span>Questions</span></p>
     <div class="title-block">
       <h2>The things people ask first.</h2>
     </div>
@@ -417,9 +452,9 @@
   </div>
 </section>
 
-<section class="section" id="hours" data-n="08">
+<section class="section" id="hours" data-n="09">
   <div class="wrap">
-    <p class="label"><span class="n">08</span><span>Find us</span></p>
+    <p class="label"><span class="n">09</span><span>Find us</span></p>
     <div class="title-block">
       <h2>Hours and location.</h2>
     </div>
@@ -447,9 +482,9 @@
   </div>
 </section>
 
-<section class="section" id="contact" data-n="09">
+<section class="section" id="contact" data-n="10">
   <div class="wrap">
-    <p class="label"><span class="n">09</span><span>Get a quote</span></p>
+    <p class="label"><span class="n">10</span><span>Get a quote</span></p>
     <div class="title-block">
       <h2>Tell us about the job.</h2>
       <p class="lede">A sentence is enough. We will be in touch to talk it through.</p>
@@ -514,7 +549,8 @@
     </ul>
     <ul>
       <li><a href="#services">Services</a></li>
-      <li><a href="#work">Work</a></li>
+      <li><a href="#work">Work</a>
+    <a href="#pick">Start here</a></li>
       <li><a href="#reviews">Reviews</a></li>
       <li><a href="#contact">Contact</a></li>
       <li><a href="https://www.google.com/search?q=Roberts+Renovations+Beamsville+reviews" target="_blank" rel="noopener">Reviews on Google</a></li>

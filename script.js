@@ -779,11 +779,17 @@
     var bctx = cv.getContext("2d", { alpha: false });
     var bimgs = [], bok = [], bt = 0, btarget = 0, braf = null;
     var names = stepEls.map(function (li) { return li.textContent.trim(); });
+    /* the steps carry their own pictures now, so this drives whatever the markup lists rather
+       than a fixed run of eight generated frames */
+    var N = stepEls.length;
+    var noteEl = $(".builder-note", wrap);
+    var goBtn = $("[data-go]", wrap);
+    if (N < 2) return;
 
-    for (var i = 0; i < STAGES; i++) (function (n) {
+    for (var i = 0; i < N; i++) (function (n) {
       var im = new Image(); im.decoding = "async";
       im.onload = function () { bok[n] = true; if (n <= Math.ceil(bt) + 1) bpaint(bt, true); };
-      im.src = "assets/film/d" + (n + 1) + ".jpg";
+      im.src = stepEls[n].getAttribute("data-img") || "";
       bimgs[n] = im;
     })(i);
 
@@ -804,12 +810,12 @@
     }
     function bnear(i) {
       if (bok[i]) return i;
-      for (var d = 1; d < STAGES; d++) { if (bok[i - d]) return i - d; if (bok[i + d]) return i + d; }
+      for (var d = 1; d < N; d++) { if (bok[i - d]) return i - d; if (bok[i + d]) return i + d; }
       return -1;
     }
     function bpaint(t, force) {
       if (!cv.width) return;
-      var i = Math.min(STAGES - 2, Math.floor(t)), f = clamp(t - i, 0, 1);
+      var i = Math.min(N - 2, Math.floor(t)), f = clamp(t - i, 0, 1);
       var e = clamp((f - 0.15) / 0.7, 0, 1);
       var mix = e * e * (3 - 2 * e);
       bctx.fillStyle = "#0f1010"; bctx.fillRect(0, 0, cv.width, cv.height);
@@ -818,12 +824,16 @@
       if (b >= 0 && mix > 0.002) bdraw(bimgs[b], mix);
       var idx = Math.round(t);
       if (label && names[idx]) label.textContent = names[idx];
+      if (noteEl && stepEls[idx]) {
+        var nt = stepEls[idx].getAttribute("data-note");
+        if (nt && noteEl.textContent !== nt) noteEl.textContent = nt;
+      }
       stepEls.forEach(function (li, n) {
         var isOn = n === idx;
         li.classList.toggle("on", isOn);
         li.setAttribute("aria-current", isOn ? "true" : "false");
       });
-      if (names[idx]) input.setAttribute("aria-valuetext", "Stage " + (idx + 1) + " of " + STAGES + ", " + names[idx].toLowerCase());
+      if (names[idx]) input.setAttribute("aria-valuetext", "Stage " + (idx + 1) + " of " + N + ", " + names[idx].toLowerCase());
     }
     function btick() {
       bt += (btarget - bt) * 0.2;
@@ -832,29 +842,53 @@
       braf = requestAnimationFrame(btick);
     }
     function setFrom(v) {
-      btarget = clamp(v, 0, STAGES - 1);
+      btarget = clamp(v, 0, N - 1);
       if (reduced()) { bt = btarget; bpaint(bt, true); return; }
       if (braf === null) braf = requestAnimationFrame(btick);
     }
-    on(input, "input", function () { setFrom(+input.value / 100 * (STAGES - 1)); });
+    on(input, "input", function () { setFrom(+input.value / 100 * (N - 1)); });
     stepEls.forEach(function (li, n) {
-      on(li, "click", function () { input.value = String(Math.round(n / (STAGES - 1) * 100)); setFrom(n); });
+      on(li, "click", function () { input.value = String(Math.round(n / (N - 1) * 100)); setFrom(n); });
       if (!li.hasAttribute("tabindex")) li.tabIndex = 0;
       on(li, "keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); } });
     });
     on(win, "resize", function () { bsize(); bpaint(bt, true); });
     bsize(); bpaint(0, true);
 
+    /* Carry the choice into the form rather than making them describe it twice. It presses the
+       matching job chip and drops a first line in the message, but only when the box is still
+       empty, because overwriting something a visitor has already typed is unforgivable. */
+    on(goBtn, "click", function () {
+      var li = stepEls[Math.round(bt)];
+      if (!li) return;
+      var job = li.getAttribute("data-job") || li.textContent.trim();
+      var chip = doc.querySelector('.job-chips [data-job="' + job + '"]');
+      if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
+      var msg = doc.getElementById("f-msg");
+      if (msg && !msg.value.trim()) msg.value = job + ". ";
+      var target = doc.getElementById("contact");
+      if (target) {
+        var top = target.getBoundingClientRect().top + win.scrollY - (header ? header.offsetHeight - 1 : 0);
+        win.scrollTo({ top: top, behavior: reduced() ? "auto" : "smooth" });
+      }
+      /* focus lands after the scroll so the browser does not fight it to the same place */
+      win.setTimeout(function () { if (msg) msg.focus({ preventScroll: true }); }, reduced() ? 0 : 620);
+    });
+
     if ("IntersectionObserver" in win && !reduced()) {
       var once = new IntersectionObserver(function (es) {
         es.forEach(function (e) {
           if (!e.isIntersecting) return;
           once.disconnect();
-          var startAt = performance.now(), dur = 2600;
+          /* Sweep out and come back. On the old slider this ran one way because the last frame
+             was the finished house and that was the payoff. This is a picker, so it has to end
+             where a visitor would want to start rather than parked on the last option. */
+          var startAt = performance.now(), dur = 3400;
           (function run(now) {
             var k = clamp((now - startAt) / dur, 0, 1);
-            var e2 = k * k * (3 - 2 * k);
-            bt = btarget = e2 * (STAGES - 1);
+            var out = k < 0.62 ? k / 0.62 : 1 - (k - 0.62) / 0.38;
+            var e2 = out * out * (3 - 2 * out);
+            bt = btarget = e2 * (N - 1);
             input.value = String(Math.round(e2 * 100));
             bpaint(bt, true);
             if (k < 1) requestAnimationFrame(run);
