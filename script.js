@@ -1018,7 +1018,7 @@
     }
     function validate() {
       var okAll = true, first = null;
-      var ids = ["f-name", "f-contact", "f-msg"];
+      var ids = ["f-name", "f-contact", "f-postal", "f-msg"];
       /* only required while it is on screen, because a hidden field nobody can see must never be
          the reason a form refuses to send */
       if (otherField && !otherField.hidden) ids.push("f-other");
