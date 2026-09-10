@@ -1,0 +1,94 @@
+/* Roberts Renovations, motion layer: pointer parallax + scrubbed section entrances.
+   Owned by agent K. Consumes --mx/--my and the per-section --sec-y/--sec-s/--sec-o custom
+   properties motion.js publishes; every actual movement happens here, never in JS. Nothing here
+   is load-bearing: with motion.js absent, --mx/--my and the per-section properties simply never
+   change from the resting defaults declared below, and the page reads exactly as if this file
+   did not exist either. Nothing inside .film-stage is touched by this file. */
+
+:root{
+  --mx:0;
+  --my:0;
+}
+
+/* [data-spot]'s own cursor spotlight (styles.css and extras.css) reads var(--mx,50%) and
+   var(--my,50%) as a *local* percentage, written only while hovering that element by script.js's
+   wireSpotlight() and removed again on pointerleave, so it falls back to the centred 50% the
+   rest of the time. Custom properties inherit, so the moment a global --mx exists on the root as
+   a -0.5..0.5 number, every [data-spot] element would inherit that number instead of ever seeing
+   an unset property, and "at 0.1234 -0.0456" is not a valid <position> for the radial-gradient
+   it sits inside, which silently drops the whole background rather than just failing to move it.
+   Resetting --mx/--my to their guaranteed-invalid initial value at the [data-spot] boundary cuts
+   the inheritance there, so var(..,50%) sees an unset property again and falls back exactly as
+   before. This is not !important, so wireSpotlight's own inline --mx/--my during a hover still
+   wins over it as it always did. */
+[data-spot]{
+  --mx:initial;
+  --my:initial;
+}
+
+/* ---------------------------------------------------------------- pointer parallax
+   Felt, not seen: single-digit pixels for the section watermark, up to about 18px for the
+   ambient line drawing, which reads as the furthest layer and so carries the most drift. The two
+   layers move opposite ways so they read as sliding past each other rather than as one flat
+   plane. Both targets sit well outside .film-stage.
+
+   will-change is added only while motion.js's lerp loop is still catching up to the pointer
+   (html.mo-pz, toggled off the instant the eased value arrives), so a visitor who never moves the
+   mouse, or whose pointer has already settled, never carries a promoted, idle compositor layer
+   for either the ambient lines or ten watermark numerals doing nothing. */
+.ambient-lines{
+  will-change:auto;
+  transform:none;
+}
+html.mo-pz .ambient-lines{
+  will-change:transform;
+  transform:translate3d(calc(var(--mx) * 36px),calc(var(--my) * 26px),0);
+}
+
+.section::before{
+  will-change:auto;
+  transform:none;
+}
+html.mo-pz .section::before{
+  will-change:transform;
+  transform:translate3d(calc(var(--mx) * -14px),calc(var(--my) * -9px),0);
+}
+
+/* ---------------------------------------------------------------- section entrances
+   A landed section, meaning motion.js never added .mo-scrub because the section is either fully
+   settled or nowhere near the viewport, carries no transform and will-change:auto, exactly as if
+   this file never ran. Only a section actually mid-scrub gets a transform, built from the three
+   custom properties motion.js publishes on it every scroll frame: --sec-y (px, translate),
+   --sec-s (<=1, scale) and --sec-o (opacity). The fallback values on .mo-scrub itself only matter
+   if this class were ever present without motion.js having set the properties, which normally
+   cannot happen since the class and the properties are always written together; they exist so a
+   half-drawn frame still renders as the resting state rather than as invalid CSS. */
+.section{
+  transform:none;
+  opacity:1;
+  will-change:auto;
+}
+.section.mo-scrub{
+  --sec-y:0px;
+  --sec-s:1;
+  --sec-o:1;
+  transform:translateY(var(--sec-y)) scale(var(--sec-s));
+  transform-origin:50% 50%;
+  opacity:var(--sec-o);
+  will-change:transform,opacity;
+}
+
+/* ---------------------------------------------------------------- reduced motion, hard floor
+   Belt and suspenders on top of motion.js checking `reduced()` before it ever writes anything:
+   even if a class or a custom property were left over from the instant before the OS setting (or
+   the site's own body.rm toggle) flipped, nothing here can still be seen moving or sitting on a
+   promoted layer. Matches the !important convention styles.css already uses for its own reduced
+   motion overrides. */
+@media (prefers-reduced-motion:reduce){
+  :root{--mx:0 !important;--my:0 !important}
+  html.mo-pz .ambient-lines,html.mo-pz .section::before{transform:none !important;will-change:auto !important}
+  .section.mo-scrub{transform:none !important;opacity:1 !important;will-change:auto !important}
+}
+body.rm{--mx:0 !important;--my:0 !important}
+body.rm .ambient-lines,body.rm .section::before{transform:none !important;will-change:auto !important}
+body.rm .section.mo-scrub{transform:none !important;opacity:1 !important;will-change:auto !important}
