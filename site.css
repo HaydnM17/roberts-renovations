@@ -2992,3 +2992,137 @@ body.rm .film-stage .beat-static .row{
    the box with no crop at all, and the slot is capped so it can never be asked to fill more
    width than the file actually has. Do not raise this cap without larger source photographs. */
 .split-media{max-width:680px;margin-inline:auto}
+
+
+/* ================================================================
+   work-carousel.css, appended after consolidation
+   Loads last, exactly as a link after site.css would, so the cascade is unchanged.
+   ================================================================ */
+/* ------------------------------------------------------------------------
+   work-carousel.css
+
+   The past-work depth-drift carousel, built at runtime by carousel.js from
+   the existing #work > .wrap > div.work-grid grid. Loads after site.css.
+   Tokens only, no new hues: --ground-3 / --ink / --ink-2 / --line-strong /
+   --accent, all declared in site.css, matching the palette this whole
+   build follows.
+
+   Most of what a carousel needs is already sitting in site.css, bare and
+   unscoped, from when carousel.js first built the services strip: .car-view
+   (scroller, mask, no scrollbar), .car-btn/.car-prev/.car-next (the round
+   arrow buttons and their position), because those rules never mentioned
+   ".svc-tiles" or "services" in their own selector. carousel.js's build()
+   is now one shared function that emits the same class names for both
+   carousels, so this file only supplies what genuinely differs per
+   instance: the wrapper's own custom properties, the compound selector that
+   turns THIS grid (".work-grid", not ".svc-tiles") into a flex track, and
+   how a work cell is sized -- see "mixed shapes" below.
+
+   The compound selectors here (".work-grid.car-track", two classes) are
+   the same trick site.css's own carousel rules use to cancel ".work-grid"'s
+   plain grid rules (one class) without !important or caring which
+   stylesheet loads second: two classes on the same element always outrank
+   one, regardless of load order.
+
+   With this file or carousel.js absent, .work-grid is exactly the plain
+   filterable grid it is today: every rule below targets a compound
+   selector this script pair creates, nothing here is a default the grid
+   would otherwise need.
+   ------------------------------------------------------------------------ */
+
+.work-carousel{
+  position:relative;
+  margin:34px 0 0; /* was .work-grid's own margin-top; moved to the wrapper
+                       for the same reason the services carousel moved its
+                       margin -- the scrollable track needs margin:0 or the
+                       browser adds it to the scrolled content instead of
+                       the box the mask and buttons are measured against */
+}
+
+/* Cell HEIGHT, not width, is the fixed instance variable here, and it is
+   capped at 300 to 340px on purpose: measured against the actual source
+   files, most of these photos are 382x510 portrait, a few are 480x360 or
+   480x228 landscape, and none run past about 620px on their longest side.
+   Capping the tall side at 340px keeps every cell at or a little under a
+   1x render of its own source on a standard-density screen, the same
+   order of magnitude the static 4-column grid already asks these same
+   files to cover -- this is not a new softness the carousel introduces,
+   just the existing constraint carried forward. See docs/AGENT-WORKCAR-LOG.md,
+   "the images are small". */
+.work-carousel{
+  --ch:min(64vw,300px);
+  --edge:1.25rem;
+}
+@media (min-width:768px){
+  .work-carousel{ --ch:300px; --edge:2rem; }
+}
+@media (min-width:1100px){
+  .work-carousel{ --ch:340px; }
+}
+
+.work-grid.car-track{
+  display:flex;
+  gap:10px;
+  margin:0;
+  /* Half of the WIDEST possible cell (a .wide figure at 4/3), not the
+     typical (narrower, portrait) one, so even a wide cell dragged to either
+     end can still reach true centre without hammering the scroll boundary.
+     A default cell gets a little extra edge room instead of an exact fit --
+     it only changes rest position, never the wrap maths. */
+  padding-inline:calc(50% - (var(--ch) * 4 / 3) / 2);
+  cursor:grab;
+}
+.work-grid.car-track:active{cursor:grabbing}
+@media (min-width:768px){
+  .work-grid.car-track{ gap:14px; }
+}
+
+/* ---------------------------------------------------------------- mixed shapes
+   The grid's own "wide" and "highlight" figures keep their classes (this
+   script only adds "car-cell", never removes one), so a cell's SHAPE stays
+   whatever the static grid already decided rather than being flattened to
+   one ratio: height is fixed for every cell so the strip keeps one clean
+   horizontal rhythm, width follows each figure's own aspect-ratio the way
+   site.css already draws it, just read against a fixed height instead of a
+   fixed width. "highlight" needs no width override -- it is already the
+   default portrait ratio, with its own bordered inset (site.css's
+   ".work-grid figure.highlight::after") inherited untouched. */
+.work-grid.car-track > figure.car-cell{
+  flex:0 0 auto;
+  height:var(--ch);
+  width:auto;
+  aspect-ratio:3/4;
+  margin:0;
+  will-change:transform;
+}
+.work-grid.car-track > figure.car-cell.wide{
+  aspect-ratio:4/3;
+}
+
+/* Everything about how a tile LOOKS -- the grayscale photo, the caption
+   wash, the highlight border -- is inherited unchanged from site.css's
+   existing ".work-grid figure / img / figcaption / figure.highlight"
+   rules. This file only changes how cells are laid out and sized.
+
+   The focus outline sits on the figure itself, not (as the services
+   carousel does) on a child anchor, and uses outline rather than
+   box-shadow: ".work-grid figure" carries its own "overflow:hidden" (to
+   crop the photo to its box), and a box-shadow on that same element would
+   be clipped by its own overflow the instant it tried to extend past the
+   edge. outline is drawn outside the border box but is not part of the
+   overflow-clipped painting area, so it survives here where a shadow
+   would not. */
+.work-grid.car-track > figure.car-cell.is-focus{
+  outline:2px solid var(--ink-2);
+  outline-offset:4px;
+}
+
+/* ---------------------------------------------------------------- reduced motion
+   Same reasoning as the services carousel (see the banner in site.css's own
+   carousel section): the site-wide reduced-motion rule already silences
+   transitions everywhere, carousel.js never writes an inline
+   transform/opacity once reduced() is true, and every cell carries
+   .is-focus at once under reduced motion (settle() adds it to all of
+   them), reusing the outline rule above rather than needing a separate one
+   here.
+   ------------------------------------------------------------------------ */
