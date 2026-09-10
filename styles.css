@@ -170,6 +170,20 @@ body.menu-open .site-header::before{opacity:0}
   opacity:0;transition:opacity .9s ease-out;
 }
 .film.live .film-word,.film.static .film-word{opacity:1}
+/* Each line rises out from behind its own edge rather than fading in. The span is the mask and
+   the i is the thing that moves. The padding and the matching negative margin give the mask a
+   little room at the bottom, because the line-height here is under 1 and caps would otherwise
+   clip against the mask edge. Both lines are decoration and aria-hidden, so nothing about this
+   reaches a reader. */
+.film-word span{display:block;overflow:hidden;padding-bottom:.07em;margin-bottom:-.07em}
+.film-word i{
+  display:block;font-style:normal;
+  transform:translateY(108%);
+  transition:transform 1.05s var(--ease-out);
+}
+.film.live .film-word i,.film.static .film-word i{transform:none}
+.film-word .fw-2 i{transition-delay:.1s}
+body.rm .film-word i{transform:none;transition:none}
 .film-word .fw-1{
   font-weight:500;font-size:clamp(14px,1.5vw,20px);
   letter-spacing:.46em;text-indent:.46em;
