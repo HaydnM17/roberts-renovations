@@ -35,6 +35,12 @@
   var LUM_SWITCH = 140;
   var SEAM = "#151513";
 
+  /* The film plays itself once on arrival, so a visitor who never scrolls still sees the house
+     go up. `to` is how far through the film the intro runs before handing control to scroll.
+     Everything before that point is spent by the intro and is rebased out of the scroll range,
+     because easing back to frame 0 on handoff would read as a rewind. See startIntro. */
+  var INTRO = { to: 0.34, rate: 1.6, glide: 620, hold: 260 };
+
   var rmq = matchMedia("(prefers-reduced-motion: reduce)");
   var portraitQ = matchMedia("(orientation: portrait)");
   var finePointer = matchMedia("(hover: hover) and (pointer: fine)");
@@ -44,6 +50,7 @@
   var $ = function (s, c) { return (c || doc).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); };
   var on = function (el, ev, fn, o) { if (el) el.addEventListener(ev, fn, o); };
+  var off = function (el, ev, fn, o) { if (el) el.removeEventListener(ev, fn, o); };
 
   root.style.setProperty("--seam", SEAM);
 
@@ -54,6 +61,7 @@
   var stage = film && $(".film-stage", film);
   var poster = film && $(".film-poster", film);
   var video = film && $(".film-video", film);
+  var filmFg = film && $(".film-fg", film);
   var fadeEl = film && $(".film-fade", film);
   var scrimEl = film && $(".film-scrim", film);
   var vignEl = film && $(".film-vignette", film);
@@ -77,14 +85,19 @@
   var seekBusy = false, pendingTime = null;
   var lastLum = -1, lastFade = -1, lastStageTxt = "", lastBar = -1, lastStageIdx = -1;
   var jankMax = 0, jankAt = 0;
+  var introRunning = false, introDone = false, introRaf = null, introBase = 0, introT0 = 0;
 
+  /* Scroll drives the film from `introBase` to 1, not from 0 to 1. The intro consumes the first
+     slice of the film and rebases it out of the range, so handing over never runs the house
+     backwards. Before the intro has played, introBase is 0 and this is the plain mapping. */
   function progress() {
     if (FORCE_P !== null) return FORCE_P;
     if (!filmScroll) return 0;
     var r = filmScroll.getBoundingClientRect();
     var range = r.height - win.innerHeight;
-    if (range <= 0) return 0;
-    return clamp(-r.top / range, 0, 1);
+    if (range <= 0) return introBase;
+    var raw = clamp(-r.top / range, 0, 1);
+    return introBase + (1 - introBase) * raw;
   }
 
   /* ---------------------------------------------------------------- the seek gate
@@ -100,8 +113,14 @@
     seekBusy = true;
     try { video.currentTime = t; } catch (e) { seekBusy = false; }
   }
+  /* the occluding canvas only ever needs repainting when the frame under it actually changed */
+  function occlUpdate() {
+    if (win.RROcclude && win.RROcclude.ok) win.RROcclude.update();
+  }
+
   on(video, "seeked", function () {
     seekBusy = false;
+    occlUpdate();
     if (pendingTime !== null) { var t = pendingTime; pendingTime = null; requestSeek(t); }
   });
   on(video, "error", function () {
@@ -163,6 +182,10 @@
     on(video, "loadedmetadata", function () {
       videoReady = true;
       if (film) film.classList.add("loaded");
+      /* the house has to be able to cover the name before the name is shown */
+      if (win.RROcclude && filmFg) {
+        win.RROcclude.init({ video: video, canvas: filmFg });
+      }
       var p = progress();
       seekBusy = false; pendingTime = null;
       shown = target = p;
@@ -181,6 +204,9 @@
         win.setTimeout(function () {
           if (film) film.classList.add("live");
           markReady();
+          /* let the reveal land before the camera starts moving, or the fade in and the first
+             seconds of the build happen on top of each other and neither reads */
+          win.setTimeout(startIntro, INTRO.hold);
         }, 60);
       }
     }, { once: true });
@@ -263,8 +289,121 @@
     rafId = requestAnimationFrame(tick);
   }
 
+  /* ---------------------------------------------------------------- the opening run
+     The film plays itself the moment it is ready, so the house is already going up before the
+     visitor touches anything. Two things make this safe to hand back from.
+
+     One: the intro uses native playback, never the seek gate. Seeking at 24fps would fight the
+     gate and stutter; play() is what the decoder is for. Nothing here writes currentTime, so the
+     gate stays clean and the handoff needs no unwinding.
+
+     Two: on handoff the position it reached becomes the new floor of the scroll range, via
+     introBase in progress(). Without that, letting go at 34% with the page still at scrollTop 0
+     would ease the film back to an empty lot, which reads as a rewind and undoes the point. */
+  function introAllowed() {
+    if (!video || !filmOn || introDone || introRunning) return false;
+    if (reduced() || STILL || FORCE_P !== null || JUMP !== null) return false;
+    if (win.scrollY > 8) return false;          /* already reading, do not yank them back */
+    if (doc.hidden) return false;               /* a background tab would burn the whole intro */
+    var c = win.navigator.connection;
+    if (c && (c.saveData || /2g/.test(c.effectiveType || ""))) return false;
+    return true;
+  }
+
+  function introFrame() {
+    if (!introRunning) return;
+    var dur = video.duration || 0;
+    if (!dur) { introRaf = requestAnimationFrame(introFrame); return; }
+    var p = clamp(video.currentTime / dur, 0, 1);
+    updateBeats(p); updateFilmChrome(p);
+    occlUpdate();
+    if (p >= INTRO.to) { endIntro("arrived"); return; }
+    introRaf = requestAnimationFrame(introFrame);
+  }
+
+  /* Ramp the rate down rather than cutting playback, so the last thing the eye sees is the
+     camera settling rather than a stop. Then pause on the frame it settled on. */
+  function glideOut(then) {
+    var from = video.playbackRate || 1, t0 = performance.now();
+    (function step(now) {
+      var k = clamp((now - t0) / INTRO.glide, 0, 1);
+      var e = 1 - Math.pow(1 - k, 3);
+      try { video.playbackRate = Math.max(0.06, from * (1 - e)); } catch (err) {}
+      if (k < 1) { introRaf = requestAnimationFrame(step); return; }
+      try { video.pause(); video.playbackRate = 1; } catch (err) {}
+      then();
+    })(t0);
+  }
+
+  function endIntro(why) {
+    if (!introRunning) return;
+    introRunning = false;
+    introDone = true;
+    if (introRaf !== null) { cancelAnimationFrame(introRaf); introRaf = null; }
+    off(win, "scroll", introBail);
+    off(win, "wheel", introBail);
+    off(win, "touchstart", introBail);
+    off(win, "keydown", introKey);
+
+    var settle = function () {
+      var dur = video.duration || 0;
+      /* rebase before reading progress(), so target and shown both come out at the frame that
+         is already on screen and the easing loop has nothing to travel */
+      introBase = dur ? clamp(video.currentTime / dur, 0, 0.92) : 0;
+      seekBusy = false; pendingTime = null;
+      var p = progress();
+      shown = target = p;
+      updateBeats(p); updateFilmChrome(p);
+      if (film) film.classList.remove("intro");
+    };
+
+    /* a bail is a person reaching for the page: stop now. Arriving on its own gets the ramp. */
+    if (why === "arrived") glideOut(settle);
+    else { try { video.pause(); video.playbackRate = 1; } catch (e) {} settle(); }
+  }
+
+  function introBail() { endIntro("bail"); }
+  function introKey(e) {
+    var k = e.key;
+    if (k === "ArrowDown" || k === "ArrowUp" || k === "PageDown" || k === "PageUp" ||
+        k === " " || k === "Home" || k === "End") endIntro("bail");
+  }
+
+  function startIntro() {
+    if (!introAllowed()) return;
+    introRunning = true;
+    introT0 = performance.now();
+    if (film) film.classList.add("intro");
+    try {
+      video.currentTime = 0;
+      video.playbackRate = INTRO.rate;
+    } catch (e) {}
+    var pr;
+    try { pr = video.play(); } catch (e) { pr = null; }
+    /* autoplay can still be refused even muted. If it is, drop the intro and leave scroll in
+       charge rather than leaving the film parked on frame 0 with a class that says otherwise. */
+    if (pr && typeof pr.catch === "function") {
+      pr.catch(function () {
+        introRunning = false; introDone = true;
+        if (film) film.classList.remove("intro");
+        off(win, "scroll", introBail); off(win, "wheel", introBail);
+        off(win, "touchstart", introBail); off(win, "keydown", introKey);
+        var p = progress(); shown = target = p;
+        requestSeek(p * (video.duration || 0));
+      });
+    }
+    on(win, "scroll", introBail, { passive: true, once: true });
+    on(win, "wheel", introBail, { passive: true, once: true });
+    on(win, "touchstart", introBail, { passive: true, once: true });
+    on(win, "keydown", introKey);
+    introRaf = requestAnimationFrame(introFrame);
+    /* hard ceiling: if the decoder stalls, never hold the page hostage */
+    win.setTimeout(function () { if (introRunning) endIntro("timeout"); }, 14000);
+  }
+
   /* ---------------------------------------------------------------- modes */
   function goStatic() {
+    if (introRunning) endIntro("bail");
     filmOn = false;
     if (!film) { markReady(); return; }
     film.classList.add("static");
@@ -329,7 +468,9 @@
     get t() { return video ? video.currentTime : -1; },
     get dur() { return video ? video.duration : -1; },
     get on() { return filmOn; },
-    get ready() { return videoReady; }
+    get ready() { return videoReady; },
+    get intro() { return { running: introRunning, done: introDone, base: introBase }; },
+    skipIntro: function () { endIntro("bail"); }
   };
 
   /* ---------------------------------------------------------------- global scroll */
@@ -337,7 +478,10 @@
 
   function onScroll() {
     var y = win.scrollY;
-    if (filmOn) {
+    /* while the intro is playing the decoder owns the playhead. Driving seeks at it here would
+       fight native playback and stutter. The bail listener ends the intro on this same event, so
+       the very next scroll lands in the branch below with the position already rebased. */
+    if (filmOn && !introRunning) {
       var p = progress();
       target = p;
       if (rafId === null) rafId = requestAnimationFrame(tick);
@@ -359,6 +503,56 @@
       var showBar = past && !atFoot;
       if (showBar !== callBarOn) { callBarOn = showBar; callBar.classList.toggle("show", showBar); }
     }
+    envFilmScroll();
+  }
+
+  /* ---------------------------------------------------------------- the environment film
+     The same house, circling, behind every section below the hero. It is one seamless loop and
+     it is the page's only background, so it plays on its own and is never scrubbed.
+
+     It does not exist until the visitor is near the end of the hero. Two reasons: the hero film
+     is 4.4 MB and must not share the pipe with anything, and a fixed blurred video decoding
+     behind an opaque hero is work nobody can see. */
+  var envEl = null, envVideo = null, envAsked = false, envOn = false;
+
+  function envFilmScroll() {
+    if (!envVideo || reduced()) return;
+    var near, past;
+    if (filmScroll) {
+      var r = filmScroll.getBoundingClientRect();
+      near = r.bottom < win.innerHeight * 2.2;   /* start fetching a screen or so early */
+      past = r.bottom < win.innerHeight * 0.9;   /* the hero has largely left, show it */
+    } else {
+      near = win.scrollY > 200; past = win.scrollY > 600;
+    }
+    if (near && !envAsked) {
+      envAsked = true;
+      envVideo.src = "assets/orbit.mp4";
+      envVideo.load();
+    }
+    if (past === envOn) return;
+    envOn = past;
+    envEl.classList.toggle("film-on", past);
+    /* nothing is gained by decoding it while it is invisible behind the hero */
+    if (past) { var pr = envVideo.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    else { try { envVideo.pause(); } catch (e) {} }
+  }
+
+  function wireEnvFilm() {
+    envEl = $(".env");
+    envVideo = envEl && $(".env-film", envEl);
+    if (!envEl || !envVideo) return;
+    var c = win.navigator.connection;
+    /* on a metered or slow connection the gradient is a perfectly good background */
+    if ((c && (c.saveData || /2g/.test(c.effectiveType || ""))) || reduced() || STILL) return;
+    on(envVideo, "loadeddata", function () { envEl.classList.add("film-ready"); });
+    on(envVideo, "error", function () { envEl.classList.remove("film-ready", "film-on"); });
+    /* a paused tab should not hold a decoder open */
+    on(doc, "visibilitychange", function () {
+      if (!envOn) return;
+      if (doc.hidden) { try { envVideo.pause(); } catch (e) {} }
+      else { var pr = envVideo.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    });
   }
 
   /* ---------------------------------------------------------------- headings: word rise */
@@ -828,6 +1022,7 @@
     wireCopy();
     wireForm();
     wireAmbient();
+    wireEnvFilm();
 
     if (sectionIo) sections.forEach(function (s) { sectionIo.observe(s); });
     if (revealIo) $$(".drawable, .section .bracket-frame, .section .rule").forEach(function (el) { revealIo.observe(el); });

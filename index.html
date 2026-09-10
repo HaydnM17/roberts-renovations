@@ -26,9 +26,11 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=5">
-<link rel="stylesheet" href="extras.css?v=2">
-<script src="script.js?v=4" defer></script>
+<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="extras.css?v=3">
+<link rel="stylesheet" href="ambient.css?v=1">
+<script src="occlude.js?v=1" defer></script>
+<script src="script.js?v=5" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -56,7 +58,13 @@
 </script>
 </head>
 <body>
-<div class="env" aria-hidden="true"></div>
+<!-- One environment behind the whole page. The gradient is the fallback and shows until the
+     orbit loop has a frame; script.js only starts fetching it once the visitor is past the hero,
+     so it never competes with the hero film for bandwidth. -->
+<div class="env" aria-hidden="true">
+  <video class="env-film" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+  <div class="env-veil"></div>
+</div>
 <a class="skip" href="#main">Skip to content</a>
 <div class="progress" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
@@ -118,6 +126,17 @@
            back to a building site. script.js swaps in poster-d.jpg for the static hero instead. -->
       <img class="film-poster" src="assets/film-first.jpg" alt="" aria-hidden="true" decoding="async">
       <video class="film-video" preload="none" muted playsinline disablepictureinpicture aria-hidden="true" tabindex="-1"></video>
+
+      <!-- The oversized name sits on the film, and .film-fg redraws the darker half of the same
+           frame back over it, so the house occludes the letters. The sky keys out because it is
+           far brighter than anything else in shot. Both are decoration: the real heading is the
+           h1 in the beat below, and the wordmark in the header carries the name for a reader. -->
+      <div class="film-word" aria-hidden="true">
+        <span class="fw-1">Roberts</span>
+        <span class="fw-2">Renovations</span>
+      </div>
+      <canvas class="film-fg" aria-hidden="true"></canvas>
+
       <div class="film-scrim" aria-hidden="true"></div>
       <div class="film-vignette" aria-hidden="true"></div>
       <div class="film-fade" aria-hidden="true"></div>

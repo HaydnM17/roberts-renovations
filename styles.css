@@ -152,9 +152,62 @@ body.menu-open .site-header::before{opacity:0}
 .film.live .film-poster{opacity:0}
 .film-video{opacity:0;transition:opacity .6s;will-change:transform;transform:translateZ(0)}
 .film.live .film-video{opacity:1}
-.film-scrim{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 120% 90% at 50% 45%,rgba(10,10,12,0) 40%,rgba(10,10,12,.42) 100%)}
-.film-vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(10,10,12,.55),rgba(10,10,12,0) 45%)}
-.film-fade{position:absolute;inset:0;pointer-events:none;background:var(--seam);opacity:0}
+/* ---- the oversized name, and the house that eats it -------------------------------------
+   .film-word is set so its band lands between roughly 17% and 43% of the stage, which is where
+   the roofline crosses in this footage. .film-fg is a canvas holding the darker half of the same
+   frame keyed out of the sky, drawn on top, so the roof and walls cover the letters. On the empty
+   lot at the start there is nothing to cover them, and the house takes the name over as it goes
+   up, which is the point of the film. Both layers are decoration and carry no text to a reader.
+   The canvas is capped to the top half of the frame so the lawn can never swallow the wordmark;
+   occlude.js feathers that lower edge so the cap is not a visible horizontal cut. */
+.film-word{
+  position:absolute;left:0;right:0;top:15%;
+  z-index:2;pointer-events:none;
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:0 clamp(16px,3.2vw,48px);
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;
+  text-transform:uppercase;color:var(--ink);
+  opacity:0;transition:opacity .9s ease-out;
+}
+.film.live .film-word,.film.static .film-word{opacity:1}
+.film-word .fw-1{
+  font-weight:500;font-size:clamp(14px,1.5vw,20px);
+  letter-spacing:.46em;text-indent:.46em;
+  line-height:1;margin-bottom:.9em;color:#fff;
+}
+/* 11 characters of this face measure 5.95x the font size, so 16.4vw fills the width edge to
+   edge. The padding above is subtracted from the multiplier rather than the width. */
+.film-word .fw-2{
+  font-weight:800;font-size:min(15.2vw,196px);
+  letter-spacing:-.028em;line-height:.86;
+  white-space:nowrap;
+}
+/* object-fit matches the video's own cover crop exactly. A canvas carrying width and height
+   attributes has an intrinsic size, so object-fit applies to it the same way it does to the
+   video, and the two stay registered at every viewport without any measuring in script. */
+.film-fg{
+  position:absolute;left:0;top:0;width:100%;height:100%;
+  object-fit:cover;object-position:50% 50%;
+  z-index:3;pointer-events:none;
+  opacity:0;transition:opacity .5s ease-out;
+}
+.film.live .film-fg.armed{opacity:1}
+/* with the effect off the name simply sits on the film, which is a normal hero, so nothing here
+   is load bearing. Keep the letters legible in that case. */
+.film-word{text-shadow:0 2px 30px rgba(8,8,10,.34)}
+
+/* The scrim sits UNDER the wordmark, because its job now includes giving white letters something
+   to sit on. This footage is an overcast sky and type on it has nothing to hold otherwise. Both
+   gradients are full bleed and reach zero well inside the frame, so neither has an edge anywhere
+   on screen, which is the thing that made the old caption panel look pasted on. */
+.film-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(to bottom,rgba(10,10,12,.52),rgba(10,10,12,.18) 32%,rgba(10,10,12,0) 54%),
+    radial-gradient(ellipse 120% 90% at 50% 45%,rgba(10,10,12,0) 40%,rgba(10,10,12,.42) 100%)}
+/* the vignette and the fade stay above the wordmark and its canvas, so scrolling takes the whole
+   hero out as one piece instead of leaving the name floating over the page ground */
+.film-vignette{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(to top,rgba(10,10,12,.55),rgba(10,10,12,0) 45%)}
+.film-fade{position:absolute;inset:0;z-index:4;pointer-events:none;background:var(--seam);opacity:0}
 .film-ring{position:absolute;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;transition:opacity .5s;filter:drop-shadow(0 2px 10px rgba(0,0,0,.5))}
 .film-ring .arc{transition:stroke-dashoffset .18s linear}
 .film.loaded .film-ring{opacity:0;pointer-events:none}
@@ -166,7 +219,16 @@ body.menu-open .site-header::before{opacity:0}
 .film-readout.dark .bar{background:rgba(0,0,0,.18)}
 .film-readout.dark .bar i{background:var(--ground)}
 
-.beats{position:absolute;inset:0;pointer-events:none}
+.beats{position:absolute;inset:0;z-index:5;pointer-events:none}
+/* The oversized name is the hero heading now, so the h1 under it steps back to a supporting
+   line. It stays an h1 because it is the one that says what the business does and where.
+   Three class names deep on purpose: extras.css loads after this file and sets hero type at
+   two, so anything shorter ties and loses. */
+.film .film-stage .beat-hero h1,
+.film .film-stage .beat-static h1{
+  font:600 clamp(20px,2.7vw,30px)/1.18 var(--display);
+  letter-spacing:-.008em;max-width:25ch;
+}
 .beat{position:absolute;left:var(--pad);right:var(--pad);bottom:max(56px,9svh);opacity:0;color:#fff;text-shadow:var(--tshadow);will-change:opacity,transform}
 .beat::before{content:"";position:absolute;z-index:-1;inset:-60% -30% -60% -30%;background:radial-gradient(60% 60% at 40% 55%,rgba(8,8,6,.66),rgba(8,8,6,.38) 45%,transparent 78%)}
 .beat *{pointer-events:auto}
@@ -433,12 +495,21 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
    there is no scrim on a phone at all. */
 @media (max-width:767px){
   .film-stage{background:var(--ground)}
-  .film-poster,.film-video{
+  .film-poster,.film-video,.film-fg{
     top:11svh;bottom:auto;left:50%;right:auto;
     width:164%;height:auto;aspect-ratio:16/9;
     transform:translate3d(-50%,0,0);
     object-fit:cover;object-position:50% 50%;
   }
+  /* the name rides the band, not the stage, and both it and the canvas clear the edge fade */
+  .film-word{
+    top:calc(11svh + 7vw);
+    padding:0 16px;
+    z-index:3;
+  }
+  .film-fg{z-index:4}
+  .film-word .fw-1{font-size:13px;letter-spacing:.34em;text-indent:.34em;margin-bottom:.5em}
+  .film-word .fw-2{font-size:15.4vw}
   /* soften both edges of the band into the ground so it is not a cut-out rectangle */
   .film-stage::after{
     content:"";position:absolute;left:0;right:0;top:11svh;height:calc(164vw * 9 / 16);

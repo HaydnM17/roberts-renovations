@@ -1,0 +1,81 @@
+/* Roberts Renovations, ambient film layer.
+   Owned by agent H. Styles only the two children of .env described in the brief:
+   <div class="env" aria-hidden="true">
+     <video class="env-film" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+     <div class="env-veil"></div>
+   </div>
+   .env itself, its gradient background and its fixed/opaque stacking are all owned by styles.css
+   and are left untouched here. This file never sets position on anything outside .env's own
+   subtree, and never touches the scrollbar.
+
+   State machine, entirely driven by classes the page JS toggles on .env:
+   - no .film-ready       -> video and veil both opacity:0. Gradient alone, unchanged from today.
+   - .film-ready          -> veil snaps to full strength instantly (see note on .env-veil below).
+   - .film-ready.film-on  -> video fades to its resting opacity over .9s. Removing .film-on
+                              reverses the same transition. .film-ready never implies .film-on
+                              on its own, so the video cannot show before it has a frame ready. */
+
+.env-film{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:50% 50%;
+  opacity:0;
+  /* Modest, not zero: a full-viewport blurred video that keeps decoding new frames is the
+     expensive case the brief calls out. 2px is enough to read as soft atmosphere instead of
+     footage; saturate(.35) pulls it most of the way to the panel/ink palette instead of
+     competing with it. Both are static values, not animated, so they cost one rasterisation
+     per video frame, not per transition tick. */
+  filter:blur(2px) saturate(.35);
+  transition:opacity .9s var(--ease-out);
+  pointer-events:none;
+}
+/* .env already carries pointer-events:none and this is an inherited property, so nothing here
+   would ever intercept a click either way; stated again on both children only so this file is
+   self-contained if .env's own rule ever moves. */
+.env-veil{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  /* --ground at high alpha, not a hand-typed hex.
+     The film's real contribution is (1 - this alpha) x .env-film's opacity. At 96% and .55 that
+     came to 2%, which is a background nobody can see. Reopened to 72% and .62, so the film
+     contributes about 17%.
+
+     17% is the worst case that still clears the bar. Take the brightest thing in this footage,
+     an overcast sky at sRGB 240, sitting behind text: 21 x .83 + 240 x .17 = 58, whose relative
+     luminance is .0442. Body ink #F3F1EA is .727, so (.727+.05)/(.0442+.05) = 8.3:1. Secondary
+     ink #B9B6AA is .4845, giving 5.7:1. Both clear 4.5:1 with room. At 25% the secondary drops
+     to 4.3:1 and fails, which is where the ceiling is. */
+  background:color-mix(in srgb,var(--ground) 72%,transparent);
+  pointer-events:none;
+  /* Deliberately no transition on this one. The veil's only job is to already be at full
+     strength by the moment the video's own opacity starts to rise, so the two can never be
+     caught mid-fade at once, which is the one combination that can momentarily overshoot
+     brighter than either resting state (worked through in the log). Snapping it in is also
+     inaudible to the visitor: .env is fixed behind the hero's own opaque stage, so .film-ready
+     always arrives while .env is still fully hidden. */
+}
+.env.film-ready .env-veil{opacity:1}
+.env.film-ready.film-on .env-film{opacity:.62}
+
+/* Phone: denser type, smaller screen, less room for a bright patch of frame to sit behind a
+   line of text before it starts working against it. Same colour, stronger alpha, which puts the
+   film at (1 - .8) x .62 = 12.4% there. */
+@media (max-width:767px){
+  .env-veil{background:color-mix(in srgb,var(--ground) 80%,transparent)}
+  /* a fixed, blurred, full-viewport video is the expensive case on a phone. Half the blur costs
+     half the rasterisation area per frame and is not tellable apart at this opacity. */
+  .env-film{filter:blur(1px) saturate(.35)}
+}
+
+/* Reduced motion hides the film outright and leaves the plain gradient, exactly as if
+   .film-ready had never arrived. Both the media query and body.rm are honoured, since the site
+   sets the class live when the OS setting changes mid-session. display:none also stops the
+   video decoding, which is the point, not just the opacity. */
+@media (prefers-reduced-motion:reduce){
+  .env-film,.env-veil{display:none}
+}
+body.rm .env-film,body.rm .env-veil{display:none}

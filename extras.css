@@ -281,6 +281,83 @@ body{padding-bottom:0}
   .site-footer{padding-bottom:calc(32px + 72px)}
 }
 
+/* ---------------------------------------------------------------- agent G pass: rhythm, grids, surfaces, measure
+   Below-the-hero quality pass. Verified against real headless captures at 1280px and 390px
+   (through _cap-phone.html) before and after, per section: services, work, build, process,
+   reviews, about, area, faq, hours, contact, footer. */
+
+/* The build slider had no margin-top of its own, so the lede paragraph and the slider photo sat
+   flush against each other with no gap at all, confirmed by cropping the exact seam on both
+   desktop and phone captures. Every other section uses 34px between its title-block and its main
+   content (.reviews, .steps, .hours-grid, .contact-grid all set it); the build slider was the one
+   place that rule got missed. */
+.builder{margin-top:34px}
+
+/* The work grid: with 16 photos at 4 columns (desktop) or 2 (phone), a plain sparse auto-placement
+   leaves genuine holes mid-grid wherever a 2-column "wide" photo can't fit the columns left in its
+   row (confirmed in a capture: row 2 desktop had three photos and a blank fourth cell; phone had
+   the same one row short). Dense packing lets a later, narrower photo fill that gap instead of
+   leaving it empty. This reorders paint position only, never the DOM, so the lightbox's prev/next
+   order and the filter buttons are unaffected; it also means a filtered subset (fewer photos, more
+   size mismatches) packs cleanly instead of gapping worse than "all" does. */
+.work-grid{grid-auto-flow:dense}
+
+/* Review cards read flat: a 1px hairline the same family as the ground behind them and nothing
+   else. A soft ambient shadow plus a hairline-width top highlight reads as a raised card without
+   a heavy border, matching the reference images' surface treatment. The hover state also had a
+   real contrast bug: --line-strong on the card's own --ground-3 measures 2.8:1, under the 3:1
+   floor for an interactive-feeling border. --ink-2, already the hover colour every other outline
+   control on the page uses (work filter, job chips), measures 7.27:1 there instead. */
+.review{box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 26px rgba(0,0,0,.24)}
+.review:hover{border-color:var(--ink-2);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 16px 34px rgba(0,0,0,.32)}
+
+/* Ten reviews in three columns leaves the last row with one card and two empty cells, the exact
+   "ragged last row" the brief called out. Dense packing can't fix a genuine shortfall (there's
+   nothing left to pull forward), so the tenth review instead becomes a full-width closing quote:
+   bigger, centred, the same card it always was, reading as a deliberate finish rather than a
+   leftover. Scoped to the three-column breakpoint only, where the gap actually happens; at two
+   columns and one column, ten reviews divide evenly and nothing needs to change. */
+@media (min-width:1100px){
+  .reviews li:last-child{grid-column:1 / -1;justify-items:center;text-align:center;padding:32px 48px}
+  .reviews li:last-child blockquote{font:800 clamp(22px,2.6vw,28px)/1.35 var(--display);letter-spacing:-.015em;max-width:56ch}
+  .reviews li:last-child footer{justify-content:center;gap:18px}
+}
+
+/* Hours and location: address text, a map and a table sitting loose on the section's own ground
+   read like three unrelated blocks, the "afterthought" the brief named. Wrapping the pair in a
+   ground-2 panel (the same surface the reviews section sits on) with a soft shadow gives it the
+   framed-card treatment the rest of the page uses for photos, and the map's own ground-3 now nests
+   inside it a shade lighter, instead of two near-black tones fighting for the same boundary. The
+   current-day row gets a faint background band to match the bold text it already had, instead of
+   relying on weight alone to read as "today". */
+.hours-grid{background:var(--ground-2);border:1px solid var(--line);border-radius:2px;
+  padding:26px 22px;box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 14px 34px rgba(0,0,0,.28)}
+@media (min-width:768px){.hours-grid{padding:40px 44px}}
+.map{box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.hours tr.today td,.hours tr.today th{background:var(--ground-3)}
+
+/* Two headings were breaking far more often than the room available to them called for. In the
+   services split, the section's own two-column title-block (h2 beside its lede, the layout every
+   other section uses when it has the full section width to spread across) is nested a second time
+   inside the services half of the photo split, so h2 was squeezed to roughly 270px, a column
+   narrow enough that "Bathrooms to basements, and the small jobs in between." broke to five short
+   lines regardless of any max-width. Stacking h2 above the lede here, the way the about split
+   already does (it has no inner title-block at all), gives the heading the full ~530px column and
+   it settles to three balanced lines instead of five ragged ones. "A small renovation company in
+   Beamsville." had the opposite problem: full
+   width to use but the site's 16ch cap (sized for the wider one-column sections) cut it off early
+   and stranded "company" alone on its own line; widening the cap there lets it use the room it
+   already had. Every other h2 on the page keeps the shared 16ch measure and is left alone. */
+@media (min-width:768px){
+  .split-content .title-block{grid-template-columns:1fr;gap:16px}
+}
+.split-content.about h2{max-width:22ch}
+
+/* Contact fields were a flat fill with an outline, no different from a plain box drawn on the
+   page. A faint inset shadow gives them a shallow "cut into the surface" read at rest; the existing
+   focus ring (a solid box-shadow) replaces it on focus rather than stacking with it. */
+.field input,.field textarea{box-shadow:inset 0 1px 4px rgba(0,0,0,.3)}
+
 /* ---------------------------------------------------------------- reduced motion */
 @media (prefers-reduced-motion:reduce){
   .call-bar,.builder-range::-webkit-slider-thumb,.lightbox .nav-btn,[data-spot]::after{transition:none !important}
