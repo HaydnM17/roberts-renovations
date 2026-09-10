@@ -26,7 +26,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="styles.css?v=13">
 <link rel="stylesheet" href="extras.css?v=3">
 <link rel="stylesheet" href="ambient.css?v=1">
 <script src="occlude.js?v=3" defer></script>
@@ -88,7 +88,6 @@
   <nav class="nav" aria-label="Sections">
     <a href="#services">Services</a>
     <a href="#work">Work</a>
-    <a href="#build">The build</a>
     <a href="#process">How it goes</a>
     <a href="#reviews">Reviews</a>
     <a href="#contact">Contact</a>
@@ -105,10 +104,9 @@
   <ol>
     <li><a href="#services"><span class="n">01</span>Services</a></li>
     <li><a href="#work"><span class="n">02</span>Work</a></li>
-    <li><a href="#build"><span class="n">03</span>The build</a></li>
-    <li><a href="#process"><span class="n">04</span>How it goes</a></li>
-    <li><a href="#reviews"><span class="n">05</span>Reviews</a></li>
-    <li><a href="#contact"><span class="n">06</span>Contact</a></li>
+    <li><a href="#process"><span class="n">03</span>How it goes</a></li>
+    <li><a href="#reviews"><span class="n">04</span>Reviews</a></li>
+    <li><a href="#contact"><span class="n">05</span>Contact</a></li>
   </ol>
   <div class="menu-foot">
     <a href="tel:+19058696353">(905) 869-6353</a>
@@ -232,19 +230,53 @@
       <li><a href="#work"><img src="assets/deck-pergola.jpg" alt="" loading="lazy" width="382" height="510"><span>Decks</span></a></li>
     </ul>
 
-    <div class="split-content">
-        <ol class="services">
-          <li><span class="n">01</span><span>Bathroom renovations</span><span class="tag">Tear-out to finish</span></li>
-          <li><span class="n">02</span><span>Tile work</span><span class="tag">Floors, walls, showers</span></li>
-          <li><span class="n">03</span><span>Drywall</span><span class="tag">New, repair, taping</span></li>
-          <li><span class="n">04</span><span>Flooring</span><span class="tag">Plank, tile, subfloor</span></li>
-          <li><span class="n">05</span><span>Kitchens</span><span class="tag">Cabinets, backsplash, counters</span></li>
-          <li><span class="n">06</span><span>Demolition and tear-outs</span><span class="tag">Cleaned up as we go</span></li>
-          <li><span class="n">07</span><span>Decks, porches and framing</span><span class="tag">Outside work</span></li>
-          <li><span class="n">08</span><span>Doors, trim and painting</span><span class="tag">The finishing</span></li>
-          <li><span class="n">09</span><span>Lighting, fans and venting</span><span class="tag">Bathroom and basement</span></li>
-          <li><span class="n">10</span><span>Furniture assembly and small jobs</span><span class="tag">Mounting, hanging, fixing</span></li>
-        </ol>
+    <!-- What each service actually involves. This is the part a homeowner is looking for and
+         the thing the old list did not give them. Every heading here is evidenced: the six
+         Google categories, the photographs, or the ten reviews. Descriptions say what the work
+         is, never what it costs, how long it takes, or what is guaranteed. Do not add a price,
+         a timeframe, a warranty or a licence claim to this section. -->
+    <ul class="svc-detail">
+      <li>
+        <h3>Bathrooms</h3>
+        <p>Tear-out through to the trim at the end, including the work behind the walls that nobody sees afterwards.</p>
+        <ul><li>Tubs and showers</li><li>Tile surrounds and niches</li><li>Vanities and fixtures</li><li>Floors and waterproofing</li><li>Venting and lighting</li></ul>
+      </li>
+      <li>
+        <h3>Kitchens</h3>
+        <p>Cabinets, counters and backsplash, with the flooring, drywall and lighting around them handled as part of the same job.</p>
+        <ul><li>Cabinet installation</li><li>Backsplash tile</li><li>Counters</li><li>Flooring</li><li>Lighting and venting</li></ul>
+      </li>
+      <li>
+        <h3>Tile</h3>
+        <p>Floors, walls and showers, set on a base that has been prepared and levelled first rather than tiled straight over.</p>
+        <ul><li>Floor tile</li><li>Shower surrounds</li><li>Backsplashes</li><li>Waterproofing</li><li>Grout and trim</li></ul>
+      </li>
+      <li>
+        <h3>Flooring</h3>
+        <p>Plank, tile and the subfloor underneath. The floor gets levelled and repaired before anything new goes down on it.</p>
+        <ul><li>Vinyl plank</li><li>Tile</li><li>Subfloor repair</li><li>Levelling</li><li>Trim and transitions</li></ul>
+      </li>
+      <li>
+        <h3>Drywall and ceilings</h3>
+        <p>New board, patches and taping, sanded and left ready for paint. Ceilings included, which is where most of the awkward work is.</p>
+        <ul><li>Board and taping</li><li>Patches and repairs</li><li>Ceilings</li><li>Corner bead</li><li>Sanding</li></ul>
+      </li>
+      <li>
+        <h3>Decks and outside work</h3>
+        <p>Decks, porches, canopies and the framing that carries them, plus the soffit and trim that finish them off.</p>
+        <ul><li>Decks</li><li>Porches and canopies</li><li>Framing</li><li>Soffit and fascia</li><li>Railings and steps</li></ul>
+      </li>
+      <li>
+        <h3>Demolition and tear-outs</h3>
+        <p>Taking out the old before the new goes in, whether that is one room or the whole floor of a house.</p>
+        <ul><li>Room strip-outs</li><li>Wall removal</li><li>Old tile and flooring</li><li>Fixtures and cabinets</li></ul>
+      </li>
+      <li>
+        <h3>The small jobs</h3>
+        <p>The ones that take an afternoon and are hard to get somebody out for.</p>
+        <ul><li>Furniture assembly</li><li>Fan and vent installation</li><li>Doors and trim</li><li>Mounting and hanging</li><li>Repairs</li></ul>
+      </li>
+    </ul>
     </div>
   </div>
 </section>
@@ -286,42 +318,9 @@
   </div>
 </section>
 
-<section class="section" id="build" data-n="03">
+<section class="section light" id="process" data-n="03">
   <div class="wrap">
-    <p class="label"><span class="n">03</span><span>The build</span></p>
-    <div class="title-block">
-      <h2>Drag it and watch a house go up.</h2>
-      <p class="lede">Every stage of a build, from a marked-out lot to a finished house.</p>
-    </div>
-    <div class="builder" id="builder" data-spot>
-      <div class="builder-stage">
-        <canvas aria-hidden="true"></canvas>
-        <p class="builder-count" aria-hidden="true">Drag</p>
-        <p class="builder-label" aria-hidden="true">Empty lot</p>
-      </div>
-      <div class="builder-control">
-        <span class="hint" aria-hidden="true">Lot</span>
-        <input class="builder-range" type="range" min="0" max="100" value="0" step="0.5"
-               aria-label="Move through the eight stages of a build" aria-valuetext="Stage 1 of 8, empty lot">
-        <span class="hint" aria-hidden="true">Finished</span>
-      </div>
-      <ol class="builder-steps">
-        <li role="button" tabindex="0" aria-current="true">Empty lot</li>
-        <li role="button" tabindex="0" aria-current="false">Dug out</li>
-        <li role="button" tabindex="0" aria-current="false">Foundation</li>
-        <li role="button" tabindex="0" aria-current="false">Framed</li>
-        <li role="button" tabindex="0" aria-current="false">Roof and wrap</li>
-        <li role="button" tabindex="0" aria-current="false">Drywall and floors</li>
-        <li role="button" tabindex="0" aria-current="false">Kitchen and bath</li>
-        <li role="button" tabindex="0" aria-current="false">Finished</li>
-      </ol>
-    </div>
-  </div>
-</section>
-
-<section class="section light" id="process" data-n="04">
-  <div class="wrap">
-    <p class="label"><span class="n">04</span><span>How it goes</span></p>
+    <p class="label"><span class="n">03</span><span>How it goes</span></p>
     <div class="title-block">
       <!-- Generalised on purpose. Nobody has confirmed this company's actual process, so nothing
            here promises a free quote, a schedule, a cleanup policy or an order of work. It
@@ -339,9 +338,9 @@
   </div>
 </section>
 
-<section class="section panel" id="reviews" data-n="05">
+<section class="section panel" id="reviews" data-n="04">
   <div class="wrap">
-    <p class="label"><span class="n">05</span><span>Google reviews</span></p>
+    <p class="label"><span class="n">04</span><span>Google reviews</span></p>
     <div class="title-block">
       <div>
         <p class="stars" aria-label="Five stars">
@@ -373,9 +372,9 @@
   </div>
 </section>
 
-<section class="section" id="about" data-n="06">
+<section class="section" id="about" data-n="05">
   <div class="wrap">
-    <p class="label"><span class="n">06</span><span>About us</span></p>
+    <p class="label"><span class="n">05</span><span>About us</span></p>
     <div class="split split-reverse">
       <div class="split-content about">
         <h2>A renovation company based in Beamsville.</h2>
@@ -390,9 +389,9 @@
   </div>
 </section>
 
-<section class="section" id="area" data-n="07">
+<section class="section" id="area" data-n="06">
   <div class="wrap">
-    <p class="label"><span class="n">07</span><span>Where we work</span></p>
+    <p class="label"><span class="n">06</span><span>Where we work</span></p>
     <div class="title-block">
       <h2>Based in Beamsville, Ontario.</h2>
       <p class="lede">Call to check if we cover your address.</p>
@@ -403,9 +402,9 @@
   </div>
 </section>
 
-<section class="section" id="faq" data-n="08">
+<section class="section" id="faq" data-n="07">
   <div class="wrap">
-    <p class="label"><span class="n">08</span><span>Questions</span></p>
+    <p class="label"><span class="n">07</span><span>Questions</span></p>
     <div class="title-block">
       <h2>The things people ask first.</h2>
     </div>
@@ -418,9 +417,9 @@
   </div>
 </section>
 
-<section class="section" id="hours" data-n="09">
+<section class="section" id="hours" data-n="08">
   <div class="wrap">
-    <p class="label"><span class="n">09</span><span>Find us</span></p>
+    <p class="label"><span class="n">08</span><span>Find us</span></p>
     <div class="title-block">
       <h2>Hours and location.</h2>
     </div>
@@ -448,9 +447,9 @@
   </div>
 </section>
 
-<section class="section" id="contact" data-n="10">
+<section class="section" id="contact" data-n="09">
   <div class="wrap">
-    <p class="label"><span class="n">10</span><span>Get a quote</span></p>
+    <p class="label"><span class="n">09</span><span>Get a quote</span></p>
     <div class="title-block">
       <h2>Tell us about the job.</h2>
       <p class="lede">A sentence is enough. We will be in touch to talk it through.</p>

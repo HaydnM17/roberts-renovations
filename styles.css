@@ -375,7 +375,58 @@ h3{font:800 22px/1.15 var(--display);letter-spacing:-.01em}
 }
 .svc-tiles a:hover img,.svc-tiles a:focus-visible img{filter:grayscale(0) brightness(.62);transform:scale(1.09)}
 .svc-tiles a:hover span::after,.svc-tiles a:focus-visible span::after{transform:scaleX(2.4)}
+/* The generic section reveal treats the whole list as one child of .wrap, so the tiles would
+   all arrive together. Staggering them is what makes a grid read as being dealt out rather than
+   switched on. The gold rule under each word draws itself at the same time. */
+.svc-tiles li{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.section.in .svc-tiles li{opacity:1;transform:none}
+.section.in .svc-tiles li:nth-child(1){transition-delay:.05s}
+.section.in .svc-tiles li:nth-child(2){transition-delay:.11s}
+.section.in .svc-tiles li:nth-child(3){transition-delay:.17s}
+.section.in .svc-tiles li:nth-child(4){transition-delay:.23s}
+.section.in .svc-tiles li:nth-child(5){transition-delay:.29s}
+.section.in .svc-tiles li:nth-child(6){transition-delay:.35s}
+.section.in.settled .svc-tiles li{transition-delay:0s}
+.svc-tiles span::after{transform:scaleX(0)}
+.section.in .svc-tiles span::after{transform:scaleX(1);transition:transform .5s var(--ease-out) .4s}
+.section.in .svc-tiles a:hover span::after,
+.section.in .svc-tiles a:focus-visible span::after{transform:scaleX(2.4);transition-delay:0s}
+
 body.rm .svc-tiles img,body.rm .svc-tiles span::after{transition:none}
+body.rm .svc-tiles li{opacity:1 !important;transform:none !important;transition:none}
+body.rm .svc-tiles span::after{transform:scaleX(1) !important}
+@media (prefers-reduced-motion:reduce){
+  .svc-tiles li{opacity:1 !important;transform:none !important}
+  .svc-tiles span::after{transform:scaleX(1) !important}
+}
+
+/* ---- what each service involves ----------------------------------------------------------
+   The tiles above say what they do. This says what that actually means, which is the thing a
+   homeowner is looking for. Cards rather than a table, because the lengths differ a lot. */
+.svc-detail{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:2px;overflow:hidden}
+@media (min-width:680px){.svc-detail{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:1040px){.svc-detail{grid-template-columns:repeat(4,1fr)}}
+.svc-detail > li{background:var(--ground);padding:24px 22px 26px;transition:background-color .35s var(--ease-out)}
+.svc-detail > li:hover{background:var(--ground-2)}
+.svc-detail h3{
+  font:800 20px/1.15 var(--display);letter-spacing:-.012em;color:var(--ink);
+  padding-bottom:12px;margin-bottom:13px;position:relative;
+}
+.svc-detail h3::after{
+  content:"";position:absolute;left:0;bottom:0;width:30px;height:2px;background:var(--accent);
+  transform-origin:0 50%;transition:transform .4s var(--ease-out);
+}
+.svc-detail > li:hover h3::after{transform:scaleX(2.1)}
+.svc-detail p{font-size:14.5px;line-height:1.5;color:var(--ink-2);margin-bottom:15px;text-wrap:pretty}
+.svc-detail ul{display:grid;gap:7px}
+.svc-detail ul li{
+  position:relative;padding-left:16px;
+  font:500 13px/1.35 var(--mono);letter-spacing:.02em;color:var(--ink-2);
+}
+.svc-detail ul li::before{
+  content:"";position:absolute;left:0;top:.48em;width:7px;height:1px;background:var(--line-strong);
+}
+body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 
 .services{display:grid;gap:0;border-top:1px solid var(--line)}
 .services li{display:grid;grid-template-columns:3ch 1fr auto;align-items:baseline;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);font:500 20px/1.2 var(--body);letter-spacing:-.005em;transition:background-color .25s,padding-left .25s}
