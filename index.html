@@ -34,10 +34,10 @@
 <link rel="stylesheet" href="nav.css?v=3">
 <link rel="stylesheet" href="film-phone.css?v=1">
 <link rel="stylesheet" href="hero-type.css?v=1">
-<link rel="stylesheet" href="hero.css?v=3">
+<link rel="stylesheet" href="hero.css?v=7">
 <script src="occlude.js?v=3" defer></script>
 <script src="reviews-slider.js?v=1" defer></script>
-<script src="script.js?v=14" defer></script>
+<script src="script.js?v=16" defer></script>
 <script src="motion.js?v=1" defer></script>
 <script type="application/ld+json">
 {
@@ -69,7 +69,17 @@
 <!-- One environment behind the whole page. The gradient is the fallback and shows until the
      orbit loop has a frame; script.js only starts fetching it once the visitor is past the hero,
      so it never competes with the hero film for bandwidth. -->
+<!-- The build film lives here now, not in the hero. It is the background of the page: fixed,
+     behind everything, scrubbing as you scroll, until the switch point where it hands over to the
+     orbit loop below. It was inside the hero's sticky stage before, which is why it could only
+     ever be behind the first screen. Everything under it is a single fixed layer so there is only
+     ever one copy of each video decoding. -->
 <div class="env" aria-hidden="true">
+  <img class="film-poster" src="assets/film-first.jpg" alt="" decoding="async">
+  <video class="film-video" preload="none" muted playsinline disablepictureinpicture tabindex="-1"></video>
+  <canvas class="film-fg" hidden></canvas>
+  <div class="film-scrim"></div>
+  <div class="film-vignette"></div>
   <video class="env-film" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
   <div class="env-veil"></div>
 </div>
@@ -129,29 +139,13 @@
 <section class="film" id="film" aria-label="Roberts Renovations">
   <div class="film-scroll">
     <div class="film-stage">
-      <!-- the film's own first frame, so the hero never opens on a finished house and then jumps
-           back to a building site. script.js swaps in poster-d.jpg for the static hero instead. -->
-      <img class="film-poster" src="assets/film-first.jpg" alt="" aria-hidden="true" decoding="async">
-      <video class="film-video" preload="none" muted playsinline disablepictureinpicture aria-hidden="true" tabindex="-1"></video>
-
-      <!-- The oversized name sits on the film, and .film-fg redraws the darker half of the same
-           frame back over it, so the house occludes the letters. The sky keys out because it is
-           far brighter than anything else in shot. Both are decoration: the real heading is the
-           h1 in the beat below, and the wordmark in the header carries the name for a reader. -->
-      <!-- Their own logo, centred, carrying the hero. This replaced an oversized wordmark I had
-           invented before the real logo existed, and the canvas that used to redraw the house
-           over that wordmark went with it: there is no longer a giant word for the house to pass
-           in front of, and a centred house passing in front of a centred logo would eat it. The
-           canvas stays in the markup and occlude.js still loads, so the effect can be put back
-           against a different element without rebuilding it. -->
+      <!-- The film itself is no longer here. It is the page background now, in the .env layer at
+           the top of the body, so it can run behind every section rather than only behind this
+           one. What is left in the hero is the crest, the captions, and the readout: the things
+           that belong to the first screen. -->
       <div class="film-crest" aria-hidden="true">
         <img class="film-crest-mark" src="assets/logo-full.png" alt="" width="376" height="484" decoding="async">
       </div>
-      <canvas class="film-fg" aria-hidden="true" hidden></canvas>
-
-      <div class="film-scrim" aria-hidden="true"></div>
-      <div class="film-vignette" aria-hidden="true"></div>
-      <div class="film-fade" aria-hidden="true"></div>
 
       <div class="beats">
         <div class="beat beat-hero" data-in="-0.1" data-peak="0" data-out="0.12">
@@ -410,6 +404,15 @@
      one of their own photographs, the label names the work in it, and the button carries that
      choice into the contact form so the visitor does not have to describe it twice. This is a
      picker, not a gallery: the gallery is the work grid above. -->
+<!-- The changeover. Above this the background is the build film, scrubbing with scroll. Below it
+     the background is the orbit loop, playing on its own. The divider covers the crossfade and
+     marks it as deliberate rather than letting it read as a seam. -->
+<div class="switch" aria-hidden="true">
+  <span class="switch-rule"></span>
+  <span class="switch-mark"></span>
+  <span class="switch-rule"></span>
+</div>
+
 <section class="section" id="pick" data-n="03">
   <div class="wrap">
     <p class="label"><span class="n">03</span><span>Your job</span></p>

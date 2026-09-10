@@ -168,3 +168,57 @@ body.rm .film-crest,body.rm .film-crest-mark{transition:none;transform:none;opac
   }
   .site-header.on-light .btn-quote:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.5)}
 }
+
+/* ---------------------------------------------------------------- the film as page background
+   It used to be absolutely positioned inside the hero's sticky stage. It now lives in the fixed
+   .env layer at the top of the body, so it is behind every section rather than behind the first
+   screen. These four are the whole of that move. */
+.env .film-poster,
+.env .film-video,
+.env .film-fg{
+  position:absolute;inset:0;
+  width:100%;height:100%;max-width:none;
+  object-fit:cover;object-position:50% 45%;
+  transform:none;aspect-ratio:auto;
+}
+.env .film-scrim,
+.env .film-vignette{position:absolute;inset:0;pointer-events:none}
+
+/* The changeover. Both videos live in the same layer, so the handover is one fading out as the
+   other fades in rather than anything being moved or reloaded. .env.film-on is set by script.js
+   when the switch divider comes up the screen. */
+.env .film-video,.env .film-poster{transition:opacity .9s var(--ease-out)}
+.env.film-on .film-video,
+.env.film-on .film-poster,
+.env.film-on .film-scrim,
+.env.film-on .film-vignette{opacity:0}
+body.rm .env .film-video,body.rm .env .film-poster{transition:none}
+
+/* The hero section is now a window onto that layer rather than a thing with its own picture in
+   it, so its stage has to be transparent or it would cover the film it used to contain. */
+/* The hero section carried an opaque ground of its own, from when it contained the film. It is
+   a window onto the fixed layer now, so both it and its stage have to be transparent or they
+   paint over the very thing they are supposed to be showing. This was the whole of the black
+   screen after the move. */
+.film{background:none !important}
+.film-stage{background:none !important}
+.film.static .film-video{display:block}
+
+/* ---------------------------------------------------------------- interim veil
+   Every section now sits over moving footage, and body copy is not readable over that at full
+   strength. script.js publishes --veil on the layer, 0 through the hero and 1 once the first
+   content section is properly in view. This is a conservative stand-in so the page is never
+   shipped unreadable; veil.css loads after this and replaces it with a properly measured one. */
+.env{--veil:0}
+.env-veil{
+  position:absolute;inset:0;pointer-events:none;
+  background:color-mix(in srgb,var(--ground) 84%,transparent);
+  opacity:var(--veil,0);
+  display:block !important;
+}
+/* under reduced motion the videos are hidden entirely and the plain gradient is the background,
+   so a veil over nothing would just grey the page down for no reason */
+/* the poster stays under reduced motion: a still is not motion, and a flat gradient is a worse
+   page than a quiet photograph. Only the moving video goes. The veil therefore still has work to
+   do, so it is not switched off here. */
+body.rm .env .film-video{display:none}

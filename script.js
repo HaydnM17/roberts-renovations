@@ -35,17 +35,11 @@
   var LUM_SWITCH = 140;
   var SEAM = "#151513";
 
-  /* `to` is 0.93, not 1. The fade that dissolves the hero into the page starts at 0.945, so
-     running to the very end would finish on a black screen rather than on the finished house. At
-     0.93 the build is done, the closing caption is up, and the fade has not started. At 1.6x that
-     run takes about twelve seconds.
-
-     `full` is the hero's scroll height in svh as the stylesheet sets it, and `floor` is the least
-     it may shrink to. Eleven screens is the distance a twenty second film needs to scrub at a
-     readable speed, but every second the intro plays is a second nobody has to scroll for, so the
-     range shrinks by the same fraction the intro consumed. Keep these two in step with
-     `.film-scroll` in styles.css. */
-  var INTRO = { to: 0.93, rate: 1.6, glide: 620, hold: 260, full: 420, floor: 100 };
+  /* Barely starts, then eases off and hands over to scroll. It runs to a tenth of the film, which
+     is a few seconds of the dig beginning, enough to show the thing is alive without watching it.
+     The rest belongs to the scroll. `full` and `floor` are gone: the film scrubs against the
+     document now, not against the hero's own height, so there is no range left to collapse. */
+  var INTRO = { to: 0.10, rate: 1.25, glide: 900, hold: 320 };
 
   var rmq = matchMedia("(prefers-reduced-motion: reduce)");
   var portraitQ = matchMedia("(orientation: portrait)");
@@ -65,12 +59,16 @@
   var film = $("#film");
   var filmScroll = film && $(".film-scroll", film);
   var stage = film && $(".film-stage", film);
-  var poster = film && $(".film-poster", film);
-  var video = film && $(".film-video", film);
-  var filmFg = film && $(".film-fg", film);
-  var fadeEl = film && $(".film-fade", film);
-  var scrimEl = film && $(".film-scrim", film);
-  var vignEl = film && $(".film-vignette", film);
+  /* the film moved into the fixed .env layer, so these are looked up on the document rather
+     than inside the hero section they used to live in */
+  var envLayer = $(".env");
+  var poster = $(".film-poster");
+  var video = $(".film-video");
+  var filmFg = $(".film-fg");
+  var fadeEl = $(".film-fade");
+  var switchEl = $(".switch");
+  var scrimEl = $(".film-scrim");
+  var vignEl = $(".film-vignette");
   var ring = film && $(".film-ring", film);
   var ringArc = ring && $("circle.arc", ring);
   var readout = film && $(".film-readout", film);
@@ -93,17 +91,36 @@
   var jankMax = 0, jankAt = 0;
   var introRunning = false, introDone = false, introRaf = null, introBase = 0, introT0 = 0;
 
-  /* Scroll drives the film from `introBase` to 1, not from 0 to 1. The intro consumes the first
-     slice of the film and rebases it out of the range, so handing over never runs the house
-     backwards. Before the intro has played, introBase is 0 and this is the plain mapping. */
+  /* The film is the page background now, so it no longer scrubs against the hero's own height.
+     It scrubs from the top of the document to the changeover, which is where it hands over to the
+     orbit loop. That is the whole point of the move: the build runs behind the hero and the first
+     sections rather than behind one screen. */
+  function scrubEnd() {
+    if (!switchEl) return Math.max(1, (filmScroll ? filmScroll.offsetHeight : win.innerHeight * 2) - win.innerHeight);
+    var top = switchEl.getBoundingClientRect().top + win.scrollY;
+    /* finish a little before the divider reaches the middle of the screen, so the last frame has
+       settled by the time the crossfade under it starts */
+    return Math.max(1, top - win.innerHeight * 0.75);
+  }
   function progress() {
     if (FORCE_P !== null) return FORCE_P;
-    if (!filmScroll) return 0;
-    var r = filmScroll.getBoundingClientRect();
-    var range = r.height - win.innerHeight;
-    if (range <= 0) return introBase;
-    var raw = clamp(-r.top / range, 0, 1);
+    var raw = clamp(win.scrollY / scrubEnd(), 0, 1);
     return introBase + (1 - introBase) * raw;
+  }
+
+  /* 0 through the hero and 1 by the time the first content section is properly in view. veil.css
+     consumes it. Published on the layer rather than the root so it cannot collide with anything
+     else, and written at two decimals because more just churns style recalculation. */
+  var lastVeil = -1;
+  function updateVeil() {
+    if (!envLayer) return;
+    var vh = win.innerHeight;
+    /* rmq, not reduced(). reduced() is also true in ?still=1 capture mode, and forcing the veil
+       to full there would make every screenshot of this site darker than the site. */
+    var v = rmq.matches ? 1 : clamp((win.scrollY - vh * 0.45) / (vh * 0.75), 0, 1);
+    if (Math.abs(v - lastVeil) < 0.01) return;
+    lastVeil = v;
+    envLayer.style.setProperty("--veil", v.toFixed(2));
   }
 
   /* ---------------------------------------------------------------- the seek gate
@@ -372,8 +389,6 @@
          Safe here because it only ever shortens the page below a visitor who has not scrolled
          yet, so nothing moves under them. */
       if (filmScroll && !STILL && FORCE_P === null) {
-        var keep = INTRO.floor + (INTRO.full - INTRO.floor) * (1 - introBase);
-        filmScroll.style.height = keep.toFixed(1) + "svh";
       }
       seekBusy = false; pendingTime = null;
       var p = progress();
@@ -529,6 +544,7 @@
       if (showBar !== callBarOn) { callBarOn = showBar; callBar.classList.toggle("show", showBar); }
     }
     envFilmScroll();
+    updateVeil();
   }
 
   /* ---------------------------------------------------------------- the environment film
@@ -542,11 +558,14 @@
 
   function envFilmScroll() {
     if (!envVideo || reduced()) return;
+    /* The changeover is the switch divider, not the end of the hero. Above it the background is
+       the build film scrubbing with scroll; below it the orbit loop plays on its own. Fetching
+       starts a couple of screens early so it is decoded before it is needed. */
     var near, past;
-    if (filmScroll) {
-      var r = filmScroll.getBoundingClientRect();
-      near = r.bottom < win.innerHeight * 2.2;   /* start fetching a screen or so early */
-      past = r.bottom < win.innerHeight * 0.9;   /* the hero has largely left, show it */
+    if (switchEl) {
+      var r = switchEl.getBoundingClientRect();
+      near = r.top < win.innerHeight * 2.6;
+      past = r.top < win.innerHeight * 0.55;
     } else {
       near = win.scrollY > 200; past = win.scrollY > 600;
     }
