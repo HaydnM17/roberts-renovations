@@ -20,13 +20,12 @@
 <meta name="theme-color" content="#151513">
 <!-- MOCKUP: remove this line the day it goes live for the client. -->
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="favicon.svg?v=2" type="image/svg+xml">
-<link rel="icon" href="favicon-32.png?v=2" sizes="32x32" type="image/png">
-<link rel="icon" href="favicon-48.png?v=2" sizes="48x48" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<link rel="icon" href="favicon-32.png?v=3" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon-48.png?v=3" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=18">
+<link rel="stylesheet" href="styles.css?v=20">
 <link rel="stylesheet" href="extras.css?v=3">
 <link rel="stylesheet" href="ambient.css?v=1">
 <link rel="stylesheet" href="reviews-slider.css?v=1">
@@ -87,7 +86,7 @@
 
 <header class="site-header" id="top">
   <a class="brand" href="#top" aria-label="Roberts Renovations, home">
-    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8z" fill="#EDB51C"/></svg>
+    <img class="mark" src="assets/logo-mark.png" alt="" width="269" height="219" decoding="async">
     <span>Roberts Renovations</span>
   </a>
   <nav class="nav" aria-label="Sections">
@@ -507,6 +506,15 @@
       <div class="split-content about">
         <h2>Renovations and handyman work, out of Beamsville.</h2>
         <p>Roberts Renovations is a full-service renovation and handyman company working across the Niagara Region. Interior and exterior, residential and commercial. Kitchens, basements, siding and decks at one end, and the repairs and small installs that are hard to get anyone out for at the other.</p>
+        <!-- Every one of these four is stated by the business itself on its TrustedPros profile.
+             Nothing else from that profile goes on the page: licence and insurance are both listed
+             there as not provided, so the site must never imply either. See docs/HOMESTARS.md. -->
+        <dl class="facts-row">
+          <div><dt>Working since</dt><dd>2021</dd></div>
+          <div><dt>Work taken</dt><dd>Residential and commercial</dd></div>
+          <div><dt>Emergencies</dt><dd>24 hour callout</dd></div>
+          <div><dt>Warranty</dt><dd>One year on the work</dd></div>
+        </dl>
       </div>
       <figure class="split-media" data-spot>
         <span class="bracket bracket-tl" aria-hidden="true"></span>
@@ -555,7 +563,9 @@
       <details><summary>Do you take small jobs?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Mounting, assembly, a door, a fan, a patch of drywall. Call and ask.</p></details>
       <details><summary>How do I get a quote?<span class="plus" aria-hidden="true"></span></summary><p>Call or send a message and we will talk through the job.</p></details>
       <details><summary>Do you clean up?<span class="plus" aria-hidden="true"></span></summary><p>We aim to leave the space tidy as the work finishes.</p></details>
-      <details><summary>Which areas do you cover?<span class="plus" aria-hidden="true"></span></summary><p>We are based in Beamsville. Call and ask about your address.</p></details>
+      <details><summary>Which areas do you cover?<span class="plus" aria-hidden="true"></span></summary><p>We are based in Beamsville and work across Niagara and over to Hamilton. Send your postal code and we will tell you.</p></details>
+      <details><summary>Do you do emergency callouts?<span class="plus" aria-hidden="true"></span></summary><p>Yes, 24 hours. The hours below are for everything that is not an emergency.</p></details>
+      <details><summary>Is the work guaranteed?<span class="plus" aria-hidden="true"></span></summary><p>There is a one year warranty on the work.</p></details>
     </div>
   </div>
 </section>
@@ -663,7 +673,7 @@
 <footer class="site-footer">
   <div class="wrap">
     <div>
-      <a class="brand" href="#top"><svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8z" fill="#EDB51C"/></svg><span>Roberts Renovations</span></a>
+      <a class="brand brand-full" href="#top" aria-label="Roberts Renovations, home"><img src="assets/logo-full.png" alt="" width="376" height="484" loading="lazy" decoding="async"><span class="visually-hidden">Roberts Renovations</span></a>
       <p style="margin-top:10px">Renovation and handyman work across Niagara.</p>
     </div>
     <ul>

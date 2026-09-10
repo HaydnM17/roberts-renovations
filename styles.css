@@ -92,8 +92,30 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .site-header.solid::before{opacity:0}
 .brand{display:inline-flex;align-items:center;gap:10px;font:800 17px/1 var(--display);letter-spacing:-.01em;text-shadow:0 1px 14px rgba(0,0,0,.35);margin-right:auto;white-space:nowrap}
 .on-light .brand,.solid .brand{text-shadow:none}
-.brand .mark{width:22px;height:22px;flex:0 0 22px;filter:drop-shadow(0 1px 6px rgba(0,0,0,.35))}
-.on-light .brand .mark,.solid .brand .mark{filter:none}
+/* The real monogram off their business card, keyed out of the black card ground so it is a white
+   mark with a proper alpha channel. It is wider than it is tall, so it is sized by height and
+   left to find its own width, and it must never be squeezed into the old square slot. */
+.brand .mark{width:auto;height:25px;flex:0 0 auto;filter:drop-shadow(0 1px 6px rgba(0,0,0,.35))}
+/* the header runs dark over the bright film, and a white mark disappears there. Invert it to
+   match the text beside it, exactly as the wordmark already does. */
+/* the footer carries the full framed lockup, which already says the name, so the text beside it
+   is for screen readers only */
+.brand-full img{width:auto;height:96px}
+.brand-full{display:inline-block}
+
+/* The four things about this business that are settled fact and that a homeowner actually asks.
+   A definition list because that is what it is, not a stat counter: no big numbers, nothing
+   counting up, nothing invented. */
+.facts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px 26px;margin-top:26px;
+  padding-top:22px;border-top:1px solid var(--line)}
+@media (min-width:900px){.facts-row{grid-template-columns:repeat(4,1fr);gap:22px}}
+.facts-row dt{font:500 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+.facts-row dd{margin:8px 0 0;font:600 16px/1.3 var(--body);color:var(--ink);text-wrap:pretty}
+/* the mark is a white PNG now, not a gold glyph. On the bright film the header text turns dark,
+   so the mark has to invert with it. When the header is solid the ground is dark again and white
+   is correct, so only the shadow is dropped there. */
+.solid .brand .mark{filter:none}
+.on-light .brand .mark{filter:invert(1)}
 .nav{display:none}
 .nav a{padding:8px 10px;font:500 14px/1 var(--body);letter-spacing:.01em;border-radius:2px;position:relative}
 .nav a::after{content:"";position:absolute;left:10px;right:10px;bottom:2px;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:0 50%;transition:transform .25s var(--ease-out)}
