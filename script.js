@@ -35,11 +35,10 @@
   var LUM_SWITCH = 140;
   var SEAM = "#151513";
 
-  /* Barely starts, then eases off and hands over to scroll. It runs to a tenth of the film, which
-     is a few seconds of the dig beginning, enough to show the thing is alive without watching it.
-     The rest belongs to the scroll. `full` and `floor` are gone: the film scrubs against the
-     document now, not against the hero's own height, so there is no range left to collapse. */
-  var INTRO = { to: 0.10, rate: 1.25, glide: 900, hold: 320 };
+  /* Slow motion, and barely any of it. Half speed for about five seconds, covering a twentieth of
+     the film. Enough to see the ground being broken and know the thing is alive, not enough to
+     spend any of the build before the visitor has done anything. */
+  var INTRO = { to: 0.05, rate: 0.5, glide: 1100, hold: 320 };
 
   var rmq = matchMedia("(prefers-reduced-motion: reduce)");
   var portraitQ = matchMedia("(orientation: portrait)");
@@ -78,7 +77,12 @@
   var ticks = readout ? $$(".tick", readout) : [];
   var progressBar = $(".progress");
 
-  var beats = film ? $$(".beat[data-in]", film).map(function (el) {
+  /* .beat-hero is deliberately excluded. Every other beat is driven by how far through the film
+     the scroll has got; the hero block instead rides the hero exit, so it starts leaving the
+     moment you scroll rather than waiting for the film to reach a threshold. */
+  var beats = film ? $$(".beat[data-in]", film).filter(function (el) {
+    return !el.classList.contains("beat-hero");
+  }).map(function (el) {
     return { el: el, a: +el.dataset.in, peak: +el.dataset.peak, b: +el.dataset.out, op: -1 };
   }) : [];
 
@@ -102,10 +106,17 @@
        settled by the time the crossfade under it starts */
     return Math.max(1, top - win.innerHeight * 0.75);
   }
+  /* Eased, not linear. Linear meant a quarter of the page spent a quarter of the build, and the
+     complaint was that the house was going up too fast to watch. Raising the input to a power
+     holds the early part back: a quarter of the way down now spends about a ninth of the film, so
+     the dig and the foundation take real scrolling, and the later stages, which read faster
+     anyway because more is changing per frame, catch up. It still finishes exactly at the
+     changeover, so nothing is lost, it is just distributed the way the eye wants it. */
+  var SCRUB_EASE = 1.7;
   function progress() {
     if (FORCE_P !== null) return FORCE_P;
     var raw = clamp(win.scrollY / scrubEnd(), 0, 1);
-    return introBase + (1 - introBase) * raw;
+    return introBase + (1 - introBase) * Math.pow(raw, SCRUB_EASE);
   }
 
   /* The captions run off raw scroll, not off the film's position. The two used to be the same
@@ -127,6 +138,19 @@
   function filmClass(name, on) {
     if (film) film.classList.toggle(name, !!on);
     if (envLayer) envLayer.classList.toggle(name, !!on);
+  }
+
+  /* The hero leaves on scroll, not on film position. 0 at the top, 1 by two thirds of a screen
+     down, which is short on purpose: the client's note was that scrolling did not feel like it
+     was doing anything. The crest and the caption block both ride this, so the first flick of the
+     wheel visibly moves the page even though the film underneath is barely advancing. */
+  var lastHeroOut = -1;
+  function updateHeroExit() {
+    if (!stage) return;
+    var t = rmq.matches ? 0 : clamp(win.scrollY / (win.innerHeight * 0.66), 0, 1);
+    if (Math.abs(t - lastHeroOut) < 0.004) return;
+    lastHeroOut = t;
+    stage.style.setProperty("--heroOut", t.toFixed(3));
   }
 
   var lastVeil = -1;
@@ -564,6 +588,7 @@
     }
     envFilmScroll();
     updateVeil();
+    updateHeroExit();
   }
 
   /* ---------------------------------------------------------------- the environment film

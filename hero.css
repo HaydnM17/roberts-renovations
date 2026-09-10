@@ -221,3 +221,36 @@ body.rm .env .film-video,body.rm .env .film-poster{transition:none}
    a flat gradient is a worse page than a quiet photograph */
 body.rm .env .film-video{display:none}
 body.rm .env .film-poster{opacity:1}
+
+/* ---------------------------------------------------------------- the hero leaves on scroll
+   script.js publishes --heroOut on the stage, 0 at the top of the page and 1 by two thirds of a
+   screen down. Both the crest and the caption block ride it, so the very first scroll visibly
+   moves the page even though the film behind is barely advancing. That was the complaint: the
+   film was racing through the build while the page itself felt static.
+
+   The caption block is excluded from the caption engine for this reason, so nothing else is
+   writing a transform to it and these two do not fight. */
+.film-stage{--heroOut:0}
+.film-crest{
+  transform:translate3d(0,calc(var(--heroOut) * -52svh),0);
+  opacity:calc(1 - var(--heroOut) * 1.35);
+}
+.beat-hero{
+  transform:translate3d(0,calc(var(--heroOut) * -34svh),0);
+  opacity:calc(1 - var(--heroOut) * 1.15);
+  visibility:visible;
+}
+/* the crest leads and the words follow it up, rather than the two travelling as one block */
+.film-crest,.beat-hero{will-change:transform,opacity}
+.film-stage[style*="--heroOut:1"] .film-crest,
+.film-stage[style*="--heroOut:1"] .beat-hero{will-change:auto}
+
+body.rm .film-crest,body.rm .beat-hero{transform:none;opacity:1}
+@media (prefers-reduced-motion:reduce){
+  .film-crest,.beat-hero{transform:none;opacity:1}
+}
+
+/* The changeover carries no visuals now. The client asked for the divider to go: "I don't even
+   need that divider anymore, it seems to flow into the other background pretty well." It stays in
+   the markup as the marker the crossfade and the scrub range are measured against. */
+.switch{display:block;height:0;margin:0;padding:0;border:0}

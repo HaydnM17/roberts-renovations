@@ -34,12 +34,11 @@
 <link rel="stylesheet" href="nav.css?v=3">
 <link rel="stylesheet" href="film-phone.css?v=1">
 <link rel="stylesheet" href="hero-type.css?v=1">
-<link rel="stylesheet" href="hero.css?v=8">
-<link rel="stylesheet" href="divider.css?v=1">
+<link rel="stylesheet" href="hero.css?v=10">
 <link rel="stylesheet" href="veil.css?v=1">
 <script src="occlude.js?v=3" defer></script>
 <script src="reviews-slider.js?v=1" defer></script>
-<script src="script.js?v=17" defer></script>
+<script src="script.js?v=19" defer></script>
 <script src="motion.js?v=1" defer></script>
 <script type="application/ld+json">
 {
@@ -404,17 +403,6 @@
 
 <!-- The drag mechanic from the old house-build slider, pointed at something true. Every frame is
      one of their own photographs, the label names the work in it, and the button carries that
-     choice into the contact form so the visitor does not have to describe it twice. This is a
-     picker, not a gallery: the gallery is the work grid above. -->
-<!-- The changeover. Above this the background is the build film, scrubbing with scroll. Below it
-     the background is the orbit loop, playing on its own. The divider covers the crossfade and
-     marks it as deliberate rather than letting it read as a seam. -->
-<div class="switch" aria-hidden="true">
-  <span class="switch-rule"></span>
-  <span class="switch-mark"></span>
-  <span class="switch-rule"></span>
-</div>
-
 <section class="section" id="pick" data-n="03">
   <div class="wrap">
     <p class="label"><span class="n">03</span><span>Your job</span></p>
@@ -464,6 +452,13 @@
     </ol>
   </div>
 </section>
+
+<!-- The changeover point. The build film scrubs from the top of the page to here, then hands over
+     to the orbit loop. It sits this far down on purpose: the film advances by how much of this
+     distance you have scrolled, so a longer run means the build moves more slowly per scroll,
+     which was the complaint. It carries no visuals of its own any more, the two videos simply
+     crossfade under it. -->
+<div class="switch" aria-hidden="true"></div>
 
 <section class="section panel" id="reviews" data-n="05">
   <div class="wrap">
