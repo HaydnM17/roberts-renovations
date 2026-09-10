@@ -204,21 +204,20 @@ body.rm .env .film-video,body.rm .env .film-poster{transition:none}
 .film-stage{background:none !important}
 .film.static .film-video{display:block}
 
-/* ---------------------------------------------------------------- interim veil
-   Every section now sits over moving footage, and body copy is not readable over that at full
-   strength. script.js publishes --veil on the layer, 0 through the hero and 1 once the first
-   content section is properly in view. This is a conservative stand-in so the page is never
-   shipped unreadable; veil.css loads after this and replaces it with a properly measured one. */
-.env{--veil:0}
-.env-veil{
-  position:absolute;inset:0;pointer-events:none;
-  background:color-mix(in srgb,var(--ground) 84%,transparent);
-  opacity:var(--veil,0);
-  display:block !important;
-}
-/* under reduced motion the videos are hidden entirely and the plain gradient is the background,
-   so a veil over nothing would just grey the page down for no reason */
-/* the poster stays under reduced motion: a still is not motion, and a flat gradient is a worse
-   page than a quiet photograph. Only the moving video goes. The veil therefore still has work to
-   do, so it is not switched off here. */
+
+/* ---------------------------------------------------------------- revealing the video
+   styles.css writes these as ".film.live .film-video", and the video is not inside .film any
+   more, so after the move it sat at opacity 0 for ever and only the still poster ever showed.
+   script.js now mirrors the same state classes onto the layer, and these are the rules that
+   read them there. Without this the background is a photograph, not a film. */
+.env .film-video{opacity:0;transition:opacity .6s var(--ease-out)}
+.env .film-poster{opacity:1;transition:opacity .6s var(--ease-out)}
+.env.live .film-video{opacity:1}
+.env.live .film-poster{opacity:0}
+.env.static .film-poster{opacity:1}
+.env.static .film-video{opacity:0}
+body.rm .env .film-video,body.rm .env .film-poster{transition:none}
+/* the poster stays under reduced motion, only the moving video goes: a still is not motion, and
+   a flat gradient is a worse page than a quiet photograph */
 body.rm .env .film-video{display:none}
+body.rm .env .film-poster{opacity:1}

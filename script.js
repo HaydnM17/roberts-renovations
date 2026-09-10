@@ -108,9 +108,27 @@
     return introBase + (1 - introBase) * raw;
   }
 
+  /* The captions run off raw scroll, not off the film's position. The two used to be the same
+     number, which meant the opening run faded the hero copy and buttons out while nobody had
+     touched anything. Nothing in the hero should move on its own: the film may start itself, the
+     words wait to be scrolled. */
+  function beatProgress() {
+    if (FORCE_P !== null) return FORCE_P;
+    return clamp(win.scrollY / scrubEnd(), 0, 1);
+  }
+
   /* 0 through the hero and 1 by the time the first content section is properly in view. veil.css
      consumes it. Published on the layer rather than the root so it cannot collide with anything
      else, and written at two decimals because more just churns style recalculation. */
+  /* The film state classes have to land on the background layer as well as the hero. The CSS that
+     reveals the video is written as ".film.live .film-video", and the video is no longer inside
+     .film, so after the move it stayed at opacity 0 for ever and only the still poster ever
+     showed. That is why the background looked like a photograph rather than a film. */
+  function filmClass(name, on) {
+    if (film) film.classList.toggle(name, !!on);
+    if (envLayer) envLayer.classList.toggle(name, !!on);
+  }
+
   var lastVeil = -1;
   function updateVeil() {
     if (!envLayer) return;
@@ -212,7 +230,7 @@
     var url = URL.createObjectURL(blob);
     on(video, "loadedmetadata", function () {
       videoReady = true;
-      if (film) film.classList.add("loaded");
+      filmClass("loaded", true);
       /* the house has to be able to cover the name before the name is shown */
       if (win.RROcclude && filmFg) {
         win.RROcclude.init({ video: video, canvas: filmFg });
@@ -225,15 +243,15 @@
          loop that would otherwise drive it there. */
       if (FORCE_P !== null) {
         on(video, "seeked", function () {
-          if (film) film.classList.add("live");
+          filmClass("live", true);
           win.setTimeout(markReady, 120);
         }, { once: true });
         requestSeek(p * video.duration);
-        win.setTimeout(function () { if (film) film.classList.add("live"); markReady(); }, 2500);
+        win.setTimeout(function () { filmClass("live", true); markReady(); }, 2500);
       } else {
         requestSeek(p * video.duration);
         win.setTimeout(function () {
-          if (film) film.classList.add("live");
+          filmClass("live", true);
           markReady();
           /* let the reveal land before the camera starts moving, or the fade in and the first
              seconds of the build happen on top of each other and neither reads */
@@ -346,7 +364,8 @@
     var dur = video.duration || 0;
     if (!dur) { introRaf = requestAnimationFrame(introFrame); return; }
     var p = clamp(video.currentTime / dur, 0, 1);
-    updateBeats(p); updateFilmChrome(p);
+    /* deliberately not updateBeats here. The opening run moves the film, not the words. */
+    updateFilmChrome(p);
     occlUpdate();
     if (p >= INTRO.to) { endIntro("arrived"); return; }
     introRaf = requestAnimationFrame(introFrame);
@@ -393,8 +412,8 @@
       seekBusy = false; pendingTime = null;
       var p = progress();
       shown = target = p;
-      updateBeats(p); updateFilmChrome(p);
-      if (film) film.classList.remove("intro");
+      updateBeats(beatProgress()); updateFilmChrome(p);
+      filmClass("intro", false);
     };
 
     /* a bail is a person reaching for the page: stop now. Arriving on its own gets the ramp. */
@@ -413,7 +432,7 @@
     if (!introAllowed()) return;
     introRunning = true;
     introT0 = performance.now();
-    if (film) film.classList.add("intro");
+    filmClass("intro", true);
     try {
       video.currentTime = 0;
       video.playbackRate = INTRO.rate;
@@ -425,7 +444,7 @@
     if (pr && typeof pr.catch === "function") {
       pr.catch(function () {
         introRunning = false; introDone = true;
-        if (film) film.classList.remove("intro");
+        filmClass("intro", false);
         off(win, "scroll", introBail); off(win, "wheel", introBail);
         off(win, "touchstart", introBail); off(win, "keydown", introKey);
         var p = progress(); shown = target = p;
@@ -446,8 +465,8 @@
     if (introRunning) endIntro("bail");
     filmOn = false;
     if (!film) { markReady(); return; }
-    film.classList.add("static");
-    film.classList.remove("live");
+    filmClass("static", true);
+    filmClass("live", false);
     if (poster && conf) poster.src = conf.poster;
     if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
     /* the poster is the finished house under a bright sky, so the chrome over it runs dark */
@@ -471,13 +490,13 @@
     if (reduced()) { goStatic(); return; }
     if (poster) poster.src = conf.first;
     markHeadings(false);
-    film.classList.remove("static");
+    filmClass("static", false);
     if (filmScroll) filmScroll.style.height = "";
     if (stage) stage.style.height = "";
     filmOn = true;
     var p = progress();
     shown = target = p;
-    updateBeats(p); updateFilmChrome(p);
+    updateBeats(beatProgress()); updateFilmChrome(p);
     /* let the poster win the bandwidth race, then stream the film in behind it */
     var img = new Image();
     var kick = function () { loadFilm(); };
@@ -525,7 +544,7 @@
       var p = progress();
       target = p;
       if (rafId === null) rafId = requestAnimationFrame(tick);
-      updateBeats(p);
+      updateBeats(beatProgress());
       updateFilmChrome(p);
     }
     if (header && filmScroll) {
