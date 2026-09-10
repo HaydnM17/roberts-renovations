@@ -230,7 +230,7 @@ body.rm .env .film-poster{opacity:1}
 
    The caption block is excluded from the caption engine for this reason, so nothing else is
    writing a transform to it and these two do not fight. */
-.film-stage{--heroOut:0}
+:root{--heroOut:0}
 .film-crest{
   transform:translate3d(0,calc(var(--heroOut) * -52svh),0);
   opacity:calc(1 - var(--heroOut) * 1.35);
@@ -254,3 +254,13 @@ body.rm .film-crest,body.rm .beat-hero{transform:none;opacity:1}
    need that divider anymore, it seems to flow into the other background pretty well." It stays in
    the markup as the marker the crossfade and the scrub range are measured against. */
 .switch{display:block;height:0;margin:0;padding:0;border:0}
+
+/* ---------------------------------------------------------------- the scrim is a hero treatment
+   It exists to push the film back behind the crest and give the hero captions something to sit
+   on. It was fading on film position, which only reaches its threshold at the changeover, so it
+   stayed fully on behind What We Do and Past work and made those sections read far darker than
+   the veil alone accounts for. Pixel sampling put the composite near pure ground where the veil
+   maths predicted a third lighter. It now leaves with the hero, on the same scroll value the
+   crest and captions ride, and the veil takes over from there. */
+.film-scrim{opacity:calc(1 - var(--heroOut,0))}
+body.rm .film-scrim{opacity:1}

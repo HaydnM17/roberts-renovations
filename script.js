@@ -150,7 +150,9 @@
     var t = rmq.matches ? 0 : clamp(win.scrollY / (win.innerHeight * 0.66), 0, 1);
     if (Math.abs(t - lastHeroOut) < 0.004) return;
     lastHeroOut = t;
-    stage.style.setProperty("--heroOut", t.toFixed(3));
+    /* published on the root, not the stage, because the film scrim lives in the background layer
+       and has to read the same number */
+    root.style.setProperty("--heroOut", t.toFixed(3));
   }
 
   var lastVeil = -1;
@@ -328,7 +330,6 @@
     if (Math.abs(f - lastFade) > 0.008) {
       lastFade = f;
       if (fadeEl) fadeEl.style.opacity = f.toFixed(3);
-      if (scrimEl) scrimEl.style.opacity = (1 - f).toFixed(3);
       if (vignEl) vignEl.style.opacity = (1 - f).toFixed(3);
     }
     var idx = clamp(Math.round(p * (STAGES - 1)), 0, STAGES - 1);

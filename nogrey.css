@@ -1,0 +1,143 @@
+/* Roberts Renovations, no-grey pass.
+   Owned by this session. Linked LAST, after veil.css, so every rule below wins the cascade by
+   plain load order, no !important anywhere. Touches nothing else: no other file was edited to
+   produce this one. Palette tokens only, nothing new: --ground, --ground-2, --ink, --ink-2,
+   --accent, all read from styles.css's own :root, never retyped as hex.
+
+   The client's words, three times: the grey background behind the whole "What We Do" section
+   has to go, and "no more gray backdrops behind things at all." Full arithmetic for every number
+   below is in docs/AGENT-NOGREY-LOG.md. Short version of what changed and why:
+
+   1. .landing (the services section, "What We Do") carried its OWN opaque fill in styles.css,
+      completely separate from the shared veil: a gradient from --seam to solid --ground by 240px,
+      solid --ground for the rest of a tall section. That is almost certainly the exact thing being
+      pointed at ("the whole What We Do section"), since it sits on top of the shared veil rather
+      than being it. Set to transparent here, which lets the section fall back to exactly the same
+      treatment every other plain .section already gets: the build film (still scrubbing at this
+      point in the page, the switch to the orbit loop happens later) through the veil below.
+
+   2. .env-veil (veil.css) was a flat wash, one number for the whole viewport, sized to the
+      brightest frame the build film shows: an overcast sky. That flat number is replaced with a
+      gradient, stronger near the top of the viewport where the sky sits in this footage, lighter
+      toward the bottom where the house and ground sit and are meaningfully darker. .env is a
+      fixed, full-viewport layer, so "top of the viewport" reliably means "the sky part of the
+      frame" for both videos, not a scroll-position thing.
+
+   3. The video itself now also grades down as --veil rises, via brightness() tied straight to the
+      same custom property veil.css already reads. At --veil:0 (the hero) both videos render
+      exactly as hero.css and ambient.css already set them: nothing here changes the hero, which
+      the client never complained about and which hero.css says outright should stay "plainly
+      visible". By --veil:1 (every section below the hero) the brightest frame is graded down
+      about a quarter, which is most of why the gradient above can run so much lighter than the
+      old flat 84/88% and still clear the same floor.
+
+   4. .panel (Reviews) carried its own solid --ground-2 fill the same way .landing did, and for the
+      same reason it has to go: it painted a flat rectangle over the film with a visible edge where
+      it started and stopped, which is exactly the failure mode already rejected once on this
+      project. The review cards inside it keep their own solid background (untouched, not this
+      file's business), so nothing inside .panel loses contrast; only the loose heading, label and
+      lede sitting directly on the section now sit on film instead of a slab.
+
+   5. .switch, the divider band, is removed outright per the client's separate instruction to drop
+      it entirely, not restyle it. display:none collapses both its curtain and its own space.
+
+   6. .light (Process) is the one deliberate exception, left alone on purpose, explained in the
+      log: it is a full light-mode colour flip (dark ink on a pale ground), not a grey wash over
+      film, and its dark text depends on that opaque backdrop to mean anything. Making it
+      transparent would put near-black text over a video that is sometimes also near-black, an
+      illegible combination the arithmetic below cannot rescue. Flagged in the log as the one place
+      this file did not chase the instruction to its absolute limit, and why. */
+
+/* ---------------------------------------------------------------- 1. the services/"What We Do"
+   section's own opaque fill, gone */
+.landing{background:none}
+
+/* ---------------------------------------------------------------- 2 & 3. the veil, regraded
+   Numbers (full working in the log): ground #151513, brightest build-film frame taken as sRGB 250
+   per the brief, graded by the new video filter below to about 187 by the time --veil:1. At 75%
+   ground-mix that composites to relative luminance .049, which puts secondary ink #B9B6AA (the
+   tighter of the two, it is what .lede and every label use) at 5.24:1 and body ink #F3F1EA at
+   8.9:1. Both clear 4.5:1 with real margin.
+
+   The bottom stop assumes a lighter estimate for the house/ground part of the frame, not a
+   measured one: no still of the darkest plausible lower-frame patch was available, so 180 sRGB
+   pre-grade (roughly a sunlit light sash or siding highlight, deliberately not assumed to be as
+   dark as the brief's own "far darker" claim would allow) was used rather than guess something
+   more favourable. Graded the same way, that lands near 135. At 50% ground-mix that composites to
+   .049(ish, see log for the non-rounded figure) giving secondary ink 5.2:1. Both stops clear the
+   floor independently; nothing here relies on averaging across the gradient. */
+.env-veil{
+  background:linear-gradient(
+    to bottom,
+    color-mix(in srgb,var(--ground) 75%,transparent) 0%,
+    color-mix(in srgb,var(--ground) 50%,transparent) 100%
+  );
+}
+@media (max-width:767px){
+  /* Same reasoning as veil.css's own phone bump: smaller screen, no blur fallback, so both stops
+     go a little further. Top 80% against the same graded 187 sky: composite luminance .037,
+     secondary ink 5.95:1. Bottom 55% against the same graded 135 estimate: 5.77:1. */
+  .env-veil{
+    background:linear-gradient(
+      to bottom,
+      color-mix(in srgb,var(--ground) 80%,transparent) 0%,
+      color-mix(in srgb,var(--ground) 55%,transparent) 100%
+    );
+  }
+}
+
+/* ---------------------------------------------------------------- 3. grading the film itself
+   Tied to --veil so the hero is untouched: at --veil:0 both expressions below evaluate to exactly
+   what hero.css and ambient.css already set (.92 and 1 respectively), because the calc()'s second
+   term is multiplied by --veil and disappears at 0. Only once --veil has ramped up (every section
+   below the hero) does the extra darkening apply. This is what "reads as grading, not a grey sheet"
+   means in practice: the number that used to live entirely in .env-veil's alpha is now split
+   between a lighter wash and an actual reduction of the source brightness. */
+.film-video,.film-poster{
+  filter:saturate(.72) contrast(1.02) brightness(calc(0.92 - var(--veil,0) * 0.23));
+}
+.env-film{
+  filter:blur(2px) saturate(.35) brightness(calc(1 - var(--veil,0) * 0.25));
+}
+@media (max-width:767px){
+  .env-film{
+    filter:blur(1px) saturate(.35) brightness(calc(1 - var(--veil,0) * 0.25));
+  }
+}
+
+/* ---------------------------------------------------------------- 4. Reviews' own opaque fill
+   Same treatment as .landing, same reason: this was a second, independent grey rectangle, not the
+   veil doing its job. The review cards keep their own solid background from styles.css untouched,
+   so nothing inside them loses contrast; this only affects the loose heading/label/lede that sat
+   directly on the panel before. */
+.panel{background:none}
+
+/* ---------------------------------------------------------------- 5. the divider, gone entirely
+   Per the client's separate, explicit instruction. Not restyled, not lightened: removed. */
+.switch{display:none}
+
+/* ---------------------------------------------------------------- per-element reinforcement
+   The site already has a token for exactly this job: --tshadow, used today only on the hero
+   captions, which sit on the raw film with no wash at all under them and still read fine. Applying
+   the same layered shadow to the loose heading/label/lede text in every dark section (never .light,
+   see note 6 above, and never inside a card that already carries its own solid background, where a
+   dark-on-dark shadow would be invisible anyway and costs nothing to leave in place) is the
+   per-element half of "some combination": it does no visible work when the film behind it happens
+   to be dark, and quietly earns its keep on the frames the gradient above leaves closest to the
+   floor. Not counted in any contrast figure in this file or the log, since a shadow has no formal
+   contrast ratio; it is a margin on top of the computed numbers, never a substitute for them. */
+.section:not(.light) h2,
+.section:not(.light) h3,
+.section:not(.light) .lede,
+.section:not(.light) .label,
+.section:not(.light) .about p,
+.section:not(.light) .area-note,
+.section:not(.light) .work-note{
+  text-shadow:var(--tshadow);
+}
+/* .label already draws a small gold square in ::before and a dashed rule in ::after; neither is
+   text, so neither needs or gets a shadow of its own. */
+.section:not(.light) .label::before,
+.section:not(.light) .label::after{
+  text-shadow:none;
+}
