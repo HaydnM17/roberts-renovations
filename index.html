@@ -26,9 +26,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 <link rel="stylesheet" href="extras.css?v=2">
-<script src="script.js?v=3" defer></script>
+<script src="script.js?v=4" defer></script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -114,7 +114,9 @@
 <section class="film" id="film" aria-label="Roberts Renovations">
   <div class="film-scroll">
     <div class="film-stage">
-      <img class="film-poster" src="assets/poster-d.jpg" alt="" aria-hidden="true" decoding="async">
+      <!-- the film's own first frame, so the hero never opens on a finished house and then jumps
+           back to a building site. script.js swaps in poster-d.jpg for the static hero instead. -->
+      <img class="film-poster" src="assets/film-first.jpg" alt="" aria-hidden="true" decoding="async">
       <video class="film-video" preload="none" muted playsinline disablepictureinpicture aria-hidden="true" tabindex="-1"></video>
       <div class="film-scrim" aria-hidden="true"></div>
       <div class="film-vignette" aria-hidden="true"></div>
