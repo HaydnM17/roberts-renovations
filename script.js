@@ -35,11 +35,17 @@
   var LUM_SWITCH = 140;
   var SEAM = "#151513";
 
-  /* The film plays itself once on arrival, so a visitor who never scrolls still sees the house
-     go up. `to` is how far through the film the intro runs before handing control to scroll.
-     Everything before that point is spent by the intro and is rebased out of the scroll range,
-     because easing back to frame 0 on handoff would read as a rewind. See startIntro. */
-  var INTRO = { to: 0.34, rate: 1.6, glide: 620, hold: 260 };
+  /* `to` is 0.93, not 1. The fade that dissolves the hero into the page starts at 0.945, so
+     running to the very end would finish on a black screen rather than on the finished house. At
+     0.93 the build is done, the closing caption is up, and the fade has not started. At 1.6x that
+     run takes about twelve seconds.
+
+     `full` is the hero's scroll height in svh as the stylesheet sets it, and `floor` is the least
+     it may shrink to. Eleven screens is the distance a twenty second film needs to scrub at a
+     readable speed, but every second the intro plays is a second nobody has to scroll for, so the
+     range shrinks by the same fraction the intro consumed. Keep these two in step with
+     `.film-scroll` in styles.css. */
+  var INTRO = { to: 0.93, rate: 1.6, glide: 620, hold: 260, full: 1150, floor: 100 };
 
   var rmq = matchMedia("(prefers-reduced-motion: reduce)");
   var portraitQ = matchMedia("(orientation: portrait)");
@@ -357,7 +363,18 @@
       var dur = video.duration || 0;
       /* rebase before reading progress(), so target and shown both come out at the frame that
          is already on screen and the easing loop has nothing to travel */
-      introBase = dur ? clamp(video.currentTime / dur, 0, 0.92) : 0;
+      introBase = dur ? clamp(video.currentTime / dur, 0, 0.94) : 0;
+      /* The hero's scroll range exists only to scrub the film, and the intro has just spent part
+         of it. Shrink the range by the same fraction, so whatever film is left scrubs at the
+         speed it always did rather than being squeezed into the full eleven screens. Play the
+         whole thing through and this leaves about a screen and a half, which is what carries the
+         fade into the page. Bail at a tenth and it keeps nine tenths of the distance.
+         Safe here because it only ever shortens the page below a visitor who has not scrolled
+         yet, so nothing moves under them. */
+      if (filmScroll && !STILL && FORCE_P === null) {
+        var keep = INTRO.floor + (INTRO.full - INTRO.floor) * (1 - introBase);
+        filmScroll.style.height = keep.toFixed(1) + "svh";
+      }
       seekBusy = false; pendingTime = null;
       var p = progress();
       shown = target = p;
@@ -406,7 +423,7 @@
     on(win, "keydown", introKey);
     introRaf = requestAnimationFrame(introFrame);
     /* hard ceiling: if the decoder stalls, never hold the page hostage */
-    win.setTimeout(function () { if (introRunning) endIntro("timeout"); }, 14000);
+    win.setTimeout(function () { if (introRunning) endIntro("timeout"); }, 26000);
   }
 
   /* ---------------------------------------------------------------- modes */
