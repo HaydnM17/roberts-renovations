@@ -4,4 +4,4 @@
 User-agent: *
 Disallow: /
 
-Sitemap: https://roberts-renovations.pages.dev/sitemap.xml
+Sitemap: https://haydnm17.github.io/roberts-renovations/sitemap.xml
