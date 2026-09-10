@@ -2974,3 +2974,16 @@ body.rm .film-stage .beat-static .row{
   .film-stage .beat-hero .btn,
   .film-stage .beat-static .btn{min-height:46px;padding:0 18px;font-size:15px}
 }
+
+
+/* ================================================================
+   Image sizing guard, added after consolidation
+   ================================================================ */
+/* Every photograph on this site came off a Google listing and none is larger than 680px on its
+   longest side. The About slot was rendering one of them at 960 wide, and the one it held was a
+   382px portrait being cover-cropped into a 4:3 landscape box, so it was stretched, cropped
+   through the middle and upscaled about two and a half times at once. It looked exactly as bad as
+   that sounds. The image is now one that is natively 680 by 510, which is 4:3 exactly, so it fits
+   the box with no crop at all, and the slot is capped so it can never be asked to fill more
+   width than the file actually has. Do not raise this cap without larger source photographs. */
+.split-media{max-width:680px;margin-inline:auto}
