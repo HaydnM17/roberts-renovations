@@ -1,0 +1,133 @@
+/* ------------------------------------------------------------------------
+   reviews-slider.css  (Agent J)
+   Turns the static #reviews <ul class="reviews"> grid into an infinitely
+   looping horizontal carousel, built at runtime by reviews-slider.js.
+   Loads after styles.css and extras.css. Tokens only, no new hues:
+   --ground / --ground-2 / --ground-3 / --ink / --ink-2 / --line /
+   --line-strong / --accent, all declared in styles.css.
+   ------------------------------------------------------------------------ */
+
+.rev-carousel{
+  position:relative;
+  margin-top:34px; /* matches the title-block-to-content gap every other section uses */
+}
+
+.rev-viewport{
+  overflow:hidden;
+  touch-action:pan-y; /* let vertical page scroll stay native; horizontal drag is ours */
+}
+
+.rev-track{
+  --rev-shift:0px;
+  display:flex;
+  column-gap:12px;
+  list-style:none;
+  margin:0;
+  padding:6px 4px 14px; /* breathing room so card shadow + focus ring never get clipped */
+  transform:translateX(var(--rev-shift,0px));
+  transition:transform .64s cubic-bezier(.22,1,.36,1);
+  cursor:grab;
+}
+.rev-track:active{cursor:grabbing}
+/* Applied by JS for the instant, invisible wrap-around jump and for drag-scrub;
+   removed again after two rAFs once the jump has been applied (see reviews-slider.js). */
+.rev-track.rev-jump{transition:none}
+
+/* One card, flush against the viewport's left edge, per the spec's own
+   -(cardWidth + gap) * activeIndex formula: no extra centring offset added. */
+.rev-track > li.review{
+  flex:0 0 auto;
+  width:min(82vw,360px);
+  margin:0;
+}
+
+/* The hover-state contrast note already in extras.css (line ~308) found
+   --line-strong on --ground-3 measures 2.8:1, under the 3:1 floor, and that
+   --ink-2 (7.27:1) is what every other outline control on the page already
+   uses instead. Same fix, same reason, for the currently-centred card. */
+.rev-track > li.review[aria-current="true"]{border-color:var(--ink-2)}
+
+@media (min-width:768px){
+  .rev-track{column-gap:16px}
+  .rev-track > li.review{width:380px}
+}
+@media (min-width:1100px){
+  .rev-track{column-gap:18px}
+  .rev-track > li.review{width:400px}
+
+  /* Neutralise extras.css's "last card becomes a featured, full-width closing
+     quote" treatment (also scoped to min-width:1100px) for cards inside the
+     track: the real DOM last-child is now clone-set 3's final card, a hidden,
+     off-screen duplicate, not the visual last review. #revTrack gives this an
+     ID selector so it always outranks extras.css's `.reviews li:last-child`
+     (a class + type selector) regardless of which file loads last. */
+  #revTrack li.review:last-child{
+    grid-column:auto;
+    justify-items:normal;
+    text-align:left;
+    padding:22px 20px;
+  }
+  #revTrack li.review:last-child blockquote{
+    font:500 18px/1.4 var(--body);
+    letter-spacing:-.005em;
+    max-width:none;
+  }
+  #revTrack li.review.short:last-child blockquote{
+    font:800 26px/1.1 var(--display);
+    letter-spacing:-.02em;
+  }
+  #revTrack li.review:last-child footer{
+    justify-content:space-between;
+    gap:12px;
+  }
+}
+
+/* ---------------------------------------------------------------- controls */
+.rev-controls{
+  margin-top:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+}
+
+.rev-btn{
+  flex:0 0 auto;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--ground-3);
+  border:1.5px solid var(--ink-2);
+  color:var(--ink);
+  transition:border-color .2s,color .2s,background-color .2s,transform .2s var(--ease-out);
+}
+.rev-btn svg{width:18px;height:18px;display:block}
+@media (hover:hover) and (pointer:fine){
+  .rev-btn:hover{border-color:var(--accent);color:var(--accent)}
+}
+.rev-btn:active{transform:scale(.94)}
+
+.rev-count{
+  font:500 12.5px/1 var(--mono);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--ink-2);
+  min-width:6ch;
+  text-align:center;
+}
+
+/* ---------------------------------------------------------------- reduced motion */
+/* The site's own @media(prefers-reduced-motion:reduce) block already forces
+   *,*::before,*::after{transition-duration:0s !important} site-wide, which
+   silences .rev-track's transform transition for free. body.rm (the site's
+   live toggle for the same preference, flipped by script.js without a page
+   reload) is NOT covered by that blanket rule, so it is handled explicitly
+   here; reviews-slider.js also re-checks the live state before every move
+   and skips the animated path, jumping instead. */
+body.rm .rev-track{transition:none}
+@media (prefers-reduced-motion:reduce){
+  .rev-track{transition:none}
+}
