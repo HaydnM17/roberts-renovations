@@ -1246,10 +1246,15 @@ body.rm .call-bar{transition:none}
    .film-ready had never arrived. Both the media query and body.rm are honoured, since the site
    sets the class live when the OS setting changes mid-session. display:none also stops the
    video decoding, which is the point, not just the opacity. */
+/* The orbit video is gone, so .env-film no longer exists. .env-veil very much does: it is the
+   readability wash that every section below the hero sits on. Hiding it here was correct while it
+   only ever covered a video that reduced motion switched off. It is wrong now, because the build
+   film still shows as a still under reduced motion, so the wash still has work to do, and hiding
+   it silently voided the contrast figures the veil was tuned to hit. Left visible on purpose. */
 @media (prefers-reduced-motion:reduce){
-  .env-film,.env-veil{display:none}
+  .env-veil{display:block}
 }
-body.rm .env-film,body.rm .env-veil{display:none}
+body.rm .env-veil{display:block}
 
 
 /* ================================================================
