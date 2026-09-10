@@ -1,0 +1,181 @@
+/* Roberts Renovations, the floating navigation shell.
+
+   Loads after every other stylesheet, so it works by overriding rather than by editing five
+   files that four other people touched today. If this ever needs backing out, drop the one link
+   tag and the header returns to the flat bar it was.
+
+   The shape comes from a reference the client sent: the mark alone on the left, and everything
+   interactive gathered into one floating pill on the right with the primary action capping its
+   end. What is not taken from it is the palette. That site is pale mint over photography; this
+   one is a dark ground with a gold accent and a black and white brand, so the pill is a frosted
+   dark surface instead of a light one.
+
+   The frosting is the technique from the glass-dark-ui skill: a translucent fill, a blur behind
+   it, an inner top highlight for the lit edge, and a hairline drawn as a masked gradient so it
+   can be brighter at the top than the bottom. A plain border cannot do that. */
+
+/* ---------------------------------------------------------------- the bar itself */
+/* The header stops being a bar with a background and becomes a transparent rail the pill floats
+   in. The old solid state painted the whole width; now the pill alone carries the weight, which
+   is what lets it read as sitting over the film rather than on top of it. */
+@media (min-width:900px){
+  .site-header{
+    height:auto;
+    padding:14px clamp(16px,2.4vw,28px);
+    padding-top:calc(14px + env(safe-area-inset-top,0px));
+    gap:14px;
+  }
+  .site-header.solid{
+    background:none;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    box-shadow:none;
+  }
+  /* the gradient the header used to lay over the top of the film is no longer needed once the
+     chrome is a self-contained pill, and it was the thing making the top edge look banded */
+  .site-header::before{opacity:0 !important}
+
+  /* ---------------------------------------------------------------- the pill */
+  .site-header .nav{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:2px;
+    margin:0 0 0 auto;
+    padding:6px 8px;
+    border-radius:999px;
+    isolation:isolate;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.02)),
+      color-mix(in srgb,var(--ground) 62%,transparent);
+    box-shadow:
+      0 14px 34px rgba(6,6,5,.34),
+      inset 0 1px 0 rgba(255,255,255,.10);
+    backdrop-filter:blur(16px) saturate(135%);
+    -webkit-backdrop-filter:blur(16px) saturate(135%);
+  }
+  /* Hairline as a masked gradient rather than a border, so it can be brightest along the top
+     edge and fade away underneath, which is what makes a surface look lit from above. The mask
+     punches out the middle and leaves a one pixel ring. */
+  .site-header .nav::before{
+    content:"";
+    position:absolute;inset:0;
+    border-radius:inherit;
+    padding:1px;
+    pointer-events:none;
+    background:linear-gradient(160deg,
+      rgba(255,255,255,.26) 0%,
+      rgba(255,255,255,.10) 38%,
+      rgba(255,255,255,.03) 70%,
+      rgba(255,255,255,.10) 100%);
+    -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+    mask-composite:exclude;
+  }
+  /* no blur available means the pill would be a pale wash with the film legible through it, so
+     fall back to a surface that is nearly solid */
+  @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+    .site-header .nav{background:color-mix(in srgb,var(--ground) 92%,transparent)}
+  }
+
+  /* ---------------------------------------------------------------- the links */
+  /* Set like every other label on this site: mono, uppercase, letterspaced. The old nav used the
+     body face at sentence case, which read as a different site's navigation sitting on this one. */
+  .site-header .nav a{
+    position:relative;
+    padding:9px 14px;
+    border-radius:999px;
+    font:500 11.5px/1 var(--mono);
+    letter-spacing:.11em;
+    text-transform:uppercase;
+    white-space:nowrap;
+    color:color-mix(in srgb,var(--ink) 78%,transparent);
+    transition:color .2s var(--ease-out),background-color .2s var(--ease-out);
+  }
+  .site-header .nav a:hover{color:var(--ink);background:rgba(255,255,255,.07)}
+  /* The underline the old nav grew on hover is gone. In a pill the hover is the pill behind the
+     word, and two hover affordances on one element is one too many. The current section still
+     gets a mark, because that is state rather than feedback. */
+  .site-header .nav a::after{
+    left:14px;right:14px;bottom:4px;height:1px;
+    background:var(--accent);
+    transform:scaleX(0);
+  }
+  .site-header .nav a:hover::after{transform:scaleX(0)}
+  .site-header .nav a[aria-current="true"]{color:var(--ink)}
+  .site-header .nav a[aria-current="true"]::after{transform:scaleX(1)}
+
+  /* ---------------------------------------------------------------- the actions */
+  /* Both sit outside the pill and read as the two things you can actually do. Quote is the
+     quiet one and Call is the loud one, which is the right order for a trade: most people ring. */
+  .site-header .btn-quote,
+  .site-header .btn-call{
+    min-height:38px;
+    border-radius:999px;
+    font:500 11.5px/1 var(--mono);
+    letter-spacing:.11em;
+    text-transform:uppercase;
+  }
+  .site-header .btn-quote{
+    padding:0 18px;
+    border:1px solid rgba(255,255,255,.30);
+    color:var(--ink);
+    background:color-mix(in srgb,var(--ground) 50%,transparent);
+    backdrop-filter:blur(16px) saturate(135%);
+    -webkit-backdrop-filter:blur(16px) saturate(135%);
+  }
+  .site-header .btn-quote:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.5)}
+  .site-header .btn-call{padding:0 18px}
+
+  /* Over a bright frame of the film the header runs dark, so the frosted surfaces have to flip
+     with it or they become a pale smudge on a pale sky. Same reasoning as the wordmark. */
+  .site-header.on-light .nav{
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.35)),
+      color-mix(in srgb,#fff 46%,transparent);
+    box-shadow:0 14px 34px rgba(6,6,5,.16),inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .site-header.on-light .nav::before{
+    background:linear-gradient(160deg,rgba(0,0,0,.16) 0%,rgba(0,0,0,.06) 40%,rgba(0,0,0,.03) 100%);
+  }
+  .site-header.on-light .nav a{color:color-mix(in srgb,var(--ground) 76%,transparent)}
+  .site-header.on-light .nav a:hover{color:var(--ground);background:rgba(0,0,0,.06)}
+  .site-header.on-light .nav a[aria-current="true"]{color:var(--ground)}
+  .site-header.on-light .btn-quote{
+    border-color:rgba(0,0,0,.28);
+    color:var(--ground);
+    background:color-mix(in srgb,#fff 42%,transparent);
+  }
+  .site-header.on-light .btn-quote:hover{background:rgba(255,255,255,.72);border-color:rgba(0,0,0,.45)}
+}
+
+/* ---------------------------------------------------------------- phone
+   No pill here. The nav links are in the drawer, so a pill would be a frosted container holding
+   one button, which is decoration pretending to be structure. The bar stays flat and the safe
+   area is respected. mobile.css already handles the rest and is not fought here. */
+@media (max-width:899px){
+  .site-header{padding-top:calc(0px + env(safe-area-inset-top,0px))}
+  /* On a phone the film is a band under the header rather than behind it, so the header sits on
+     the page ground and runs white even while on-light is set. extras.css turns the menu button
+     dark for the desktop case, which left it dark on a dark ground here and effectively invisible.
+     Measured before the fix: present, 82px wide, visible, and unreadable. */
+  .site-header.on-light .menu-btn{color:#fff}
+}
+/* Below about 430 the mark, the full wordmark, Call and Menu do not fit on one line, and the
+   Call button was landing on top of the last letters of the name. The wordmark goes and the
+   monogram carries it, which is what the monogram is for. The link keeps its aria-label, so its
+   accessible name is unchanged, and the name is set enormous in the hero directly underneath. */
+@media (max-width:430px){
+  .site-header .brand span{display:none}
+  .site-header .brand{margin-right:auto}
+  .site-header .brand .mark{height:28px}
+}
+
+/* A landed surface that never changes still re-rasterises, and a blurred one is expensive to
+   re-rasterise, so the blur is dropped entirely when the visitor has asked for less motion and
+   on any screen small enough that it is only costing battery. */
+@media (prefers-reduced-motion:reduce){
+  .site-header .nav,.site-header .btn-quote{transition:none}
+}
+body.rm .site-header .nav,body.rm .site-header .btn-quote{transition:none}
