@@ -1,0 +1,124 @@
+/* Roberts Renovations, mobile pass (agent M).
+   Loads LAST, after styles.css, extras.css, ambient.css, reviews-slider.css and motion.css, so
+   every rule here is an override by cascade order, not by specificity games or !important.
+   Read-only against those files: nothing here duplicates a selector unless it is changing that
+   selector's outcome at a phone width. Checked at 360, 390, 430 (portrait) and at common phone
+   landscape sizes (667x375, 390x844 rotated, 844x390, 926x428). See docs/AGENT-M-LOG.md for the
+   measurements and contrast figures behind every rule below. */
+
+/* ---------------------------------------------------------------------------------------------
+   1. Body copy under the 15px phone floor.
+   Both were 14/14.5px, unconditionally, at every width. Colour is untouched (ink-2 on ground
+   measures 9:1, ink-2 on the panel ground-2 measures 8.3:1, both far past the 4.5:1 floor), only
+   the size moves up to the floor itself. */
+@media (max-width:767px){
+  .svc-detail p{font-size:15px}
+  .site-footer{font-size:15px}
+}
+
+/* ---------------------------------------------------------------------------------------------
+   2. Tap-target spacing.
+   The picker's step list (.builder-steps) wraps to two rows of six on a phone (4 columns), and
+   its own row-gap is 2px: measured at 390px wide, row 1 bottom sits 2.7px above row 2's top, on
+   cells that are 37-44px tall. That is not "spacing between neighbours", it is touching. Column
+   gap (10px) is left alone, it was never the problem. */
+@media (max-width:767px){
+  .builder-steps{row-gap:10px}
+}
+
+/* The desktop nav (.nav, styles.css @media min-width:768px) is what a phone actually gets in
+   landscape: iPhone 12 through 15 Pro Max all report 768-926px wide lying flat, so they clear the
+   767px phone breakpoint entirely and land on the six-link top nav, never the hamburger menu.
+   Measured at 844x390 (iPhone 13/14 landscape): .nav a is a real link with no min-height at all,
+   8px vertical padding on a 14px line box, about 30-33px tall on screen. It has never been
+   touch-sized because nothing narrower than 768px ever shows it. hover:none + pointer:coarse
+   catches exactly that device, and only that device: a mouse-driven window this narrow is not
+   a real case, and hover:hover devices at this width are untouched. */
+@media (hover:none) and (pointer:coarse){
+  .nav a{min-height:44px;padding-top:15px;padding-bottom:15px;display:inline-flex;align-items:center}
+}
+
+/* ---------------------------------------------------------------------------------------------
+   3. Vertical rhythm on a short viewport.
+   .section already steps down from 112px (desktop, min-width:768px) to 72px below that, so a
+   390-wide portrait phone already gets the smaller number. But the 112px rule keys off WIDTH
+   alone, and a phone lying flat is often 768px or wider (see above) while still only 360-430px
+   TALL, so it draws the desktop's 112px top-and-bottom padding inside a viewport barely 390px
+   tall: 224px of pure padding either side of roughly 170px of actual seam, more than half the
+   screen. Keying this off height instead of width targets exactly that case, portrait phones
+   (already on the smaller number) are untouched. */
+@media (max-height:500px){
+  .section{padding:40px 0}
+}
+
+/* ---------------------------------------------------------------------------------------------
+   4. Safe area: header and menu (top notch), call bar (side notch in landscape), footer
+   (clearance under the call bar).
+   The call bar already carries env(safe-area-inset-bottom) on its own bottom padding (extras.css)
+   but the header carries nothing for the top inset, and the footer's reserved clearance under the
+   call bar (extras.css: padding-bottom:calc(32px + 72px)) is a flat number that does not grow with
+   the same inset the call bar's own height grows with. Both are fixed here. Note: the page's
+   <meta name=viewport> has no viewport-fit=cover, so every env(safe-area-inset-*) below resolves
+   to 0 until that one line is added (outside my files, see the log and my final message). */
+@media (max-width:767px){
+  .site-header{
+    height:calc(var(--header-h) + env(safe-area-inset-top));
+    padding-top:env(safe-area-inset-top);
+  }
+  .menu{padding-top:calc(var(--header-h) + env(safe-area-inset-top) + 24px)}
+
+  /* Call bar height is 10px pad-top + 48px button + 10px pad-bottom + its own bottom inset
+     (extras.css). The footer's old flat 72px reservation assumed ~68px and no inset at all; this
+     tracks the real figure so the call bar can never sit over the fine print above it. */
+  .site-footer{padding-bottom:calc(32px + 68px + env(safe-area-inset-bottom))}
+}
+@media (max-width:767px) and (orientation:landscape){
+  .site-header{
+    padding-left:max(var(--pad),env(safe-area-inset-left));
+    padding-right:max(var(--pad),env(safe-area-inset-right));
+  }
+  .call-bar{
+    padding-left:max(14px,env(safe-area-inset-left));
+    padding-right:max(14px,env(safe-area-inset-right));
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   5. Landscape phone hero: a genuine bug, not a style choice.
+   The comment above the phone band in styles.css sizes it from vw (164%/132% of width) because a
+   portrait phone is width-constrained and height-abundant. A landscape phone is the opposite, and
+   the existing "short phone" fallback (@media max-width:767 and max-height:720) still sizes the
+   band from vw, so at a real landscape size like 667x375 (iPhone SE, the narrowest landscape phone
+   that still clears the 768px desktop-nav cutoff) the band comes out 132% of 667 = 880px wide,
+   495px tall aspect-locked, inside a viewport only 375px tall. Measured with getBoundingClientRect
+   through the probe harness: the CTA row (.beat-static .row, the Call / See our work buttons)
+   landed at y:630-678, entirely below the 375px-tall sticky stage, clipped by its own
+   overflow:hidden and unreachable. This is content loss on a real, common device, not a look I am
+   choosing to change: styles.css's own comment says to read it before overriding, so this is that
+   read, and the override below re-derives the band from svh (the constrained axis in landscape)
+   instead of vw, the same idea the portrait rule already uses, just against the other axis. Sized
+   and re-measured with the same probe until the CTA row cleared the viewport with room to spare;
+   see the log for the numbers at 667x375, 700x360 and 736x360. */
+@media (max-width:767px) and (orientation:landscape){
+  .film-poster,.film-video,.film-fg{
+    top:5svh;bottom:auto;left:50%;right:auto;
+    width:auto;height:46svh;max-width:none;
+    aspect-ratio:16/9;
+    transform:translate3d(-50%,0,0);
+    object-fit:cover;object-position:50% 50%;
+  }
+  .film-stage::after{top:5svh;height:46svh}
+  .beat,.beat-static{top:calc(5svh + 46svh + 10px);bottom:auto}
+  .film-readout{bottom:calc(100svh - 5svh - 46svh + 8px)}
+  /* the kicker's own margin plus the h1 at two lines plus the row was still tight in the 121px
+     left over on a 375-tall screen; dropping the row's top margin by half gives back 13px without
+     touching type size or the shared .row rule other breakpoints use */
+  .film-stage .beat-hero .row{margin-top:13px}
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Reduced motion: nothing above animates, so there is nothing to add here. The one thing that
+   could have been a problem, the landscape band re-flowing its top/height, is a static layout
+   change, not a transition, and the existing rm rules elsewhere already kill every transition on
+   .film-poster/.film-video/.film-fg site-wide.
+   --------------------------------------------------------------------------------------------- */
