@@ -25,20 +25,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=23">
-<link rel="stylesheet" href="extras.css?v=3">
-<link rel="stylesheet" href="ambient.css?v=1">
-<link rel="stylesheet" href="reviews-slider.css?v=1">
-<link rel="stylesheet" href="carousel.css?v=1">
-<link rel="stylesheet" href="motion.css?v=1">
-<link rel="stylesheet" href="mobile.css?v=1">
-<link rel="stylesheet" href="nav.css?v=3">
-<link rel="stylesheet" href="film-phone.css?v=1">
-<link rel="stylesheet" href="hero-type.css?v=1">
-<link rel="stylesheet" href="hero.css?v=11">
-<link rel="stylesheet" href="veil.css?v=1">
-<link rel="stylesheet" href="nogrey.css?v=1">
-<link rel="stylesheet" href="hero-entrance.css?v=1">
+<link rel="stylesheet" href="site.css?v=2">
 <script src="occlude.js?v=3" defer></script>
 <script src="reviews-slider.js?v=1" defer></script>
 <script src="carousel.js?v=1" defer></script>
@@ -85,7 +72,6 @@
   <canvas class="film-fg" hidden></canvas>
   <div class="film-scrim"></div>
   <div class="film-vignette"></div>
-  <video class="env-film" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
   <div class="env-veil"></div>
 </div>
 <a class="skip" href="#main">Skip to content</a>
@@ -436,12 +422,6 @@
   </div>
 </section>
 
-<!-- The changeover point. The build film scrubs from the top of the page to here, then hands over
-     to the orbit loop. It sits this far down on purpose: the film advances by how much of this
-     distance you have scrolled, so a longer run means the build moves more slowly per scroll,
-     which was the complaint. It carries no visuals of its own any more, the two videos simply
-     crossfade under it. -->
-<div class="switch" aria-hidden="true"></div>
 
 <section class="section panel" id="reviews" data-n="04">
   <div class="wrap">

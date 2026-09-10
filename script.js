@@ -65,7 +65,7 @@
   var video = $(".film-video");
   var filmFg = $(".film-fg");
   var fadeEl = $(".film-fade");
-  var switchEl = $(".switch");
+
   var scrimEl = $(".film-scrim");
   var vignEl = $(".film-vignette");
   var ring = film && $(".film-ring", film);
@@ -99,12 +99,13 @@
      It scrubs from the top of the document to the changeover, which is where it hands over to the
      orbit loop. That is the whole point of the move: the build runs behind the hero and the first
      sections rather than behind one screen. */
+  /* The film finishes near the foot of the page, not at a marker partway down it. The point of it
+     is that the house goes up as you scroll, so the build should still have somewhere to go when
+     you are most of the way through. There is no changeover to stop at any more: the orbit loop
+     is gone and this is the only background there is. */
   function scrubEnd() {
-    if (!switchEl) return Math.max(1, (filmScroll ? filmScroll.offsetHeight : win.innerHeight * 2) - win.innerHeight);
-    var top = switchEl.getBoundingClientRect().top + win.scrollY;
-    /* finish a little before the divider reaches the middle of the screen, so the last frame has
-       settled by the time the crossfade under it starts */
-    return Math.max(1, top - win.innerHeight * 0.75);
+    var docH = Math.max(doc.documentElement.scrollHeight, win.innerHeight + 1);
+    return Math.max(1, docH - win.innerHeight * 1.7);
   }
   /* Eased, not linear. Linear meant a quarter of the page spent a quarter of the build, and the
      complaint was that the house was going up too fast to watch. Raising the input to a power
@@ -587,90 +588,10 @@
       var showBar = past && !atFoot;
       if (showBar !== callBarOn) { callBarOn = showBar; callBar.classList.toggle("show", showBar); }
     }
-    envFilmScroll();
     updateVeil();
     updateHeroExit();
   }
 
-  /* ---------------------------------------------------------------- the environment film
-     The same house, circling, behind every section below the hero. It is one seamless loop and
-     it is the page's only background, so it plays on its own and is never scrubbed.
-
-     It does not exist until the visitor is near the end of the hero. Two reasons: the hero film
-     is 4.4 MB and must not share the pipe with anything, and a fixed blurred video decoding
-     behind an opaque hero is work nobody can see. */
-  var envEl = null, envVideo = null, envAsked = false, envOn = false;
-
-  function envFilmScroll() {
-    if (!envVideo || reduced()) return;
-    /* The changeover is the switch divider, not the end of the hero. Above it the background is
-       the build film scrubbing with scroll; below it the orbit loop plays on its own. Fetching
-       starts a couple of screens early so it is decoded before it is needed. */
-    var near, past;
-    if (switchEl) {
-      var r = switchEl.getBoundingClientRect();
-      near = r.top < win.innerHeight * 2.6;
-      past = r.top < win.innerHeight * 0.55;
-    } else {
-      near = win.scrollY > 200; past = win.scrollY > 600;
-    }
-    if (near && !envAsked) {
-      envAsked = true;
-      envVideo.src = "assets/orbit.mp4";
-      envVideo.load();
-    }
-    if (past === envOn) return;
-    envOn = past;
-    envEl.classList.toggle("film-on", past);
-    /* nothing is gained by decoding it while it is invisible behind the hero */
-    if (past) { var pr = envVideo.play(); if (pr && pr.catch) pr.catch(function () {}); }
-    else { try { envVideo.pause(); } catch (e) {} }
-  }
-
-  /* headless cannot scroll and does not composite a video layer, so the only way to prove this
-     layer works is to drive it from the console and read the element back */
-  win.__env = {
-    get asked() { return envAsked; },
-    get on() { return envOn; },
-    get ready() { return !!(envEl && envEl.classList.contains("film-ready")); },
-    get readyState() { return envVideo ? envVideo.readyState : -1; },
-    get paused() { return envVideo ? envVideo.paused : null; },
-    get t() { return envVideo ? envVideo.currentTime : -1; },
-    get dur() { return envVideo ? envVideo.duration : -1; },
-    force: function () {
-      if (!envVideo) return false;
-      envAsked = true;
-      envVideo.src = "assets/orbit.mp4";
-      envVideo.load();
-      envOn = true;
-      envEl.classList.add("film-on");
-      var pr = envVideo.play();
-      if (pr && pr.catch) pr.catch(function () {});
-      return true;
-    }
-  };
-
-  function wireEnvFilm() {
-    envEl = $(".env");
-    envVideo = envEl && $(".env-film", envEl);
-    if (!envEl || !envVideo) return;
-    var c = win.navigator.connection;
-    /* on a metered or slow connection the gradient is a perfectly good background */
-    if ((c && (c.saveData || /2g/.test(c.effectiveType || ""))) || reduced() || STILL) return;
-    /* loadeddata is the honest gate, because it means a frame exists to show. canplay is listened
-       for as well only because a browser that skips one usually still fires the other, and the
-       cost of arriving twice is a class that is already set. */
-    var ready = function () { envEl.classList.add("film-ready"); };
-    on(envVideo, "loadeddata", ready);
-    on(envVideo, "canplay", ready);
-    on(envVideo, "error", function () { envEl.classList.remove("film-ready", "film-on"); });
-    /* a paused tab should not hold a decoder open */
-    on(doc, "visibilitychange", function () {
-      if (!envOn) return;
-      if (doc.hidden) { try { envVideo.pause(); } catch (e) {} }
-      else { var pr = envVideo.play(); if (pr && pr.catch) pr.catch(function () {}); }
-    });
-  }
 
   /* ---------------------------------------------------------------- headings: word rise */
   function splitHeadings() {
@@ -1236,7 +1157,6 @@
     wireCopy();
     wireForm();
     wireAmbient();
-    wireEnvFilm();
 
     if (sectionIo) sections.forEach(function (s) { sectionIo.observe(s); });
     if (revealIo) $$(".drawable, .section .bracket-frame, .section .rule").forEach(function (el) { revealIo.observe(el); });
