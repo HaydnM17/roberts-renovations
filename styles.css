@@ -269,6 +269,25 @@ body.menu-open .site-header::before{opacity:0}
 /* ---------- Sections ---------- */
 .wrap{width:min(100% - var(--pad) * 2,var(--max));margin-inline:auto}
 .section{position:relative;padding:72px 0}
+/* The section number set enormous and almost invisible behind its own content. It is the same
+   figure the label already shows, so it adds no information and is decoration only, which is why
+   it comes from a data attribute and never from the document. Kept under 3% ink so it reads as a
+   watermark in the surface rather than as type competing with the heading. */
+.section::before{
+  content:attr(data-n);
+  position:absolute;right:2vw;top:-.14em;
+  z-index:0;pointer-events:none;
+  font:800 clamp(150px,21vw,320px)/.8 var(--display);
+  letter-spacing:-.05em;
+  color:var(--ink);opacity:.028;
+}
+.section.light::before{color:var(--ground);opacity:.05}
+.section.panel::before{opacity:.035}
+/* everything real sits above it */
+.section > .wrap{position:relative;z-index:1}
+@media (max-width:767px){
+  .section::before{font-size:34vw;right:-.04em;opacity:.035}
+}
 .section .wrap > *,.section .split > *,.section .split-content > *{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
 .section.in .wrap > *,.section.in .split > *,.section.in .split-content > *{opacity:1;transform:none}
 .section.in .wrap > :nth-child(2),.section.in .split > :nth-child(2),.section.in .split-content > :nth-child(2){transition-delay:.08s}
@@ -498,6 +517,9 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
   .film-poster,.film-video,.film-fg{
     top:11svh;bottom:auto;left:50%;right:auto;
     width:164%;height:auto;aspect-ratio:16/9;
+    /* the global img,svg,video,canvas reset caps these at 100%, which silently held the band at
+       full width and undid the whole point of overflowing it. Released here only. */
+    max-width:none;
     transform:translate3d(-50%,0,0);
     object-fit:cover;object-position:50% 50%;
   }
@@ -509,13 +531,22 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
   }
   .film-fg{z-index:4}
   .film-word .fw-1{font-size:13px;letter-spacing:.34em;text-indent:.34em;margin-bottom:.5em}
-  .film-word .fw-2{font-size:15.4vw}
+  /* this face at weight 800 measures 6.33px of width per px of size for these eleven letters, so
+     13.6vw plus the 16px padding either side is the widest that still clears a 390 wide screen */
+  .film-word .fw-2{font-size:13.6vw}
   /* soften both edges of the band into the ground so it is not a cut-out rectangle */
   .film-stage::after{
     content:"";position:absolute;left:0;right:0;top:11svh;height:calc(164vw * 9 / 16);
     pointer-events:none;z-index:2;
+    /* The top of this does two jobs. It fades the band's cut edge into the ground, and it carries
+       the wordmark, which is white and would otherwise sit on an overcast sky with nothing to
+       hold onto. There is no scrim on a phone, so this is the only thing doing it. It is one
+       gradient across the full width of the band, so it has no edge anywhere on screen. */
     background:linear-gradient(to bottom,
-      var(--ground) 0%,rgba(21,21,19,0) 14%,
+      var(--ground) 0%,
+      rgba(21,21,19,.60) 15%,
+      rgba(21,21,19,.28) 31%,
+      rgba(21,21,19,0) 48%,
       rgba(21,21,19,0) 74%,var(--ground) 100%);
   }
   /* On a phone the header sits over the page ground, not over the film, so the dark-on-bright

@@ -538,6 +538,29 @@
     else { try { envVideo.pause(); } catch (e) {} }
   }
 
+  /* headless cannot scroll and does not composite a video layer, so the only way to prove this
+     layer works is to drive it from the console and read the element back */
+  win.__env = {
+    get asked() { return envAsked; },
+    get on() { return envOn; },
+    get ready() { return !!(envEl && envEl.classList.contains("film-ready")); },
+    get readyState() { return envVideo ? envVideo.readyState : -1; },
+    get paused() { return envVideo ? envVideo.paused : null; },
+    get t() { return envVideo ? envVideo.currentTime : -1; },
+    get dur() { return envVideo ? envVideo.duration : -1; },
+    force: function () {
+      if (!envVideo) return false;
+      envAsked = true;
+      envVideo.src = "assets/orbit.mp4";
+      envVideo.load();
+      envOn = true;
+      envEl.classList.add("film-on");
+      var pr = envVideo.play();
+      if (pr && pr.catch) pr.catch(function () {});
+      return true;
+    }
+  };
+
   function wireEnvFilm() {
     envEl = $(".env");
     envVideo = envEl && $(".env-film", envEl);
@@ -545,7 +568,12 @@
     var c = win.navigator.connection;
     /* on a metered or slow connection the gradient is a perfectly good background */
     if ((c && (c.saveData || /2g/.test(c.effectiveType || ""))) || reduced() || STILL) return;
-    on(envVideo, "loadeddata", function () { envEl.classList.add("film-ready"); });
+    /* loadeddata is the honest gate, because it means a frame exists to show. canplay is listened
+       for as well only because a browser that skips one usually still fires the other, and the
+       cost of arriving twice is a class that is already set. */
+    var ready = function () { envEl.classList.add("film-ready"); };
+    on(envVideo, "loadeddata", ready);
+    on(envVideo, "canplay", ready);
     on(envVideo, "error", function () { envEl.classList.remove("film-ready", "film-on"); });
     /* a paused tab should not hold a decoder open */
     on(doc, "visibilitychange", function () {
