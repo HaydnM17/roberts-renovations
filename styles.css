@@ -168,7 +168,12 @@ body.menu-open .site-header::before{opacity:0}
 
 /* ---------- Film ---------- */
 .film{position:relative;background:var(--ground)}
-.film-scroll{position:relative;height:1150svh}
+/* 420, not the 1150 it was. Eleven and a half screens gave the film room to scrub slowly, but
+   it meant a full swipe moved the build about eight percent, so scrolling read as doing nothing
+   for the first third of the page. The first third of the film is an empty lot and a dig, which
+   is the least visually eventful part of it, so the two problems compounded. At 420 a screen of
+   scrolling advances the build about a third. Keep INTRO.full in script.js in step with this. */
+.film-scroll{position:relative;height:420svh}
 .film-stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#1c1b17}
 .film-poster,.film-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .film-poster{opacity:1;transition:opacity .6s}

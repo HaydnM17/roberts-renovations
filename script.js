@@ -45,7 +45,7 @@
      readable speed, but every second the intro plays is a second nobody has to scroll for, so the
      range shrinks by the same fraction the intro consumed. Keep these two in step with
      `.film-scroll` in styles.css. */
-  var INTRO = { to: 0.93, rate: 1.6, glide: 620, hold: 260, full: 1150, floor: 100 };
+  var INTRO = { to: 0.93, rate: 1.6, glide: 620, hold: 260, full: 420, floor: 100 };
 
   var rmq = matchMedia("(prefers-reduced-motion: reduce)");
   var portraitQ = matchMedia("(orientation: portrait)");
