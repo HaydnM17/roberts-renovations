@@ -25,7 +25,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png?v=3">
 <link rel="manifest" href="site.webmanifest">
 <link rel="preload" href="fonts/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=22">
+<link rel="stylesheet" href="styles.css?v=23">
 <link rel="stylesheet" href="extras.css?v=3">
 <link rel="stylesheet" href="ambient.css?v=1">
 <link rel="stylesheet" href="reviews-slider.css?v=1">
@@ -33,6 +33,8 @@
 <link rel="stylesheet" href="mobile.css?v=1">
 <link rel="stylesheet" href="nav.css?v=3">
 <link rel="stylesheet" href="film-phone.css?v=1">
+<link rel="stylesheet" href="hero-type.css?v=1">
+<link rel="stylesheet" href="hero.css?v=3">
 <script src="occlude.js?v=3" defer></script>
 <script src="reviews-slider.js?v=1" defer></script>
 <script src="script.js?v=14" defer></script>
@@ -136,11 +138,16 @@
            frame back over it, so the house occludes the letters. The sky keys out because it is
            far brighter than anything else in shot. Both are decoration: the real heading is the
            h1 in the beat below, and the wordmark in the header carries the name for a reader. -->
-      <div class="film-word" aria-hidden="true">
-        <span class="fw-1"><i>Roberts</i></span>
-        <span class="fw-2"><i>Renovations</i></span>
+      <!-- Their own logo, centred, carrying the hero. This replaced an oversized wordmark I had
+           invented before the real logo existed, and the canvas that used to redraw the house
+           over that wordmark went with it: there is no longer a giant word for the house to pass
+           in front of, and a centred house passing in front of a centred logo would eat it. The
+           canvas stays in the markup and occlude.js still loads, so the effect can be put back
+           against a different element without rebuilding it. -->
+      <div class="film-crest" aria-hidden="true">
+        <img class="film-crest-mark" src="assets/logo-full.png" alt="" width="376" height="484" decoding="async">
       </div>
-      <canvas class="film-fg" aria-hidden="true"></canvas>
+      <canvas class="film-fg" aria-hidden="true" hidden></canvas>
 
       <div class="film-scrim" aria-hidden="true"></div>
       <div class="film-vignette" aria-hidden="true"></div>
