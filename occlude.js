@@ -45,6 +45,12 @@
   var SOFT_LO = 232;    /* over the trim, under the sky: where the brightness term starts to bite */
   var SOFT_HI = 248;
   var FLOOR = 0.20;     /* sky trapped inside the frame keeps this much, so studs still read solid */
+  /* How solid the house is allowed to get over the name. At 1 the finished house erased the
+     wordmark completely: the roof peak sits about a tenth of the way down the frame and the wall
+     runs to three quarters, so there is no height a word this size can sit at and still straddle
+     the roofline. Capping it instead keeps the house plainly in front while the name reads
+     through it, all the way from the empty lot to the finished build. */
+  var MAX_A = 0.55;
   var CUTOFF = 0.58;    /* keep the top of the frame only, or the lawn is redrawn over itself */
   var FEATHER = 0.12;   /* and ease that lower edge out, so the cap is never a horizontal line */
   var SAMPLE_W = 320;   /* 320 by 180 is 57,600 pixels, which is nothing to walk on a seek */
@@ -99,7 +105,7 @@
             t = clamp01((lum - SOFT_LO) / (SOFT_HI - SOFT_LO));
             a = 1 - (1 - FLOOR) * t;
           }
-          d[i + 3] = (a * rowAlpha[y] * 255 + 0.5) | 0;
+          d[i + 3] = (a * rowAlpha[y] * MAX_A * 255 + 0.5) | 0;
         }
       }
       sctx.putImageData(frame, 0, 0);
