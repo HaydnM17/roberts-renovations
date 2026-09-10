@@ -888,6 +888,10 @@
         es.forEach(function (e) {
           if (!e.isIntersecting) return;
           once.disconnect();
+          /* checked again here, not only when the observer was made. Somebody can turn reduced
+             motion on between the page loading and this section coming into view, and the site
+             honours that switch live everywhere else. */
+          if (reduced()) { bt = btarget = 0; bpaint(0, true); return; }
           /* Sweep out and come back. On the old slider this ran one way because the last frame
              was the finished house and that was the payoff. This is a picker, so it has to end
              where a visitor would want to start rather than parked on the last option. */

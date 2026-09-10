@@ -80,6 +80,7 @@ button{cursor:pointer;background:none;border:0;padding:0}
 
 .grain{position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;z-index:60;opacity:.045;mix-blend-mode:screen;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:240px 240px;animation:grain 1.4s steps(4) infinite}
 @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-1%,-1%)}100%{transform:translate(0,0)}}
+body.rm .grain{animation:none}
 @media (pointer:coarse) and (max-width:900px){.grain{display:none}}
 .progress{position:fixed;top:0;left:0;height:2px;width:100%;z-index:70;pointer-events:none;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
 
@@ -500,10 +501,11 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .work-grid figure.highlight{position:relative}
 .work-grid figure.highlight::after{content:"";position:absolute;inset:14px;border:1px solid var(--ink);pointer-events:none;z-index:3}
 .work-grid figure.highlight figcaption{text-align:center}
-/* Cursor spotlight, wired by script.js wireSpotlight() on [data-spot] elements */
+/* Cursor spotlight lives in extras.css, as a ::after behind the content in the accent colour.
+   There used to be a second one here as a ::before in white at z-index 2, which sat OVER the
+   content and stacked with the other on every hover. Removed. If a spotlight is ever needed
+   again, extend the one in extras.css rather than adding a second pseudo-element. */
 [data-spot]{position:relative}
-[data-spot]::before{content:"";position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .3s;background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.10),transparent 70%)}
-@media (hover:hover) and (pointer:fine){[data-spot]:hover::before{opacity:1}}
 
 /* Process, the one light section */
 .light{--ground:var(--light-ground);--ground-2:#F7F6F2;--ground-3:#DFDED7;--ink:#15140F;--ink-2:#4E4C45;--line:#B9B7AE;--line-strong:#6E6C64;background:var(--ground);color:var(--ink)}
