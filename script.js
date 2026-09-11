@@ -108,13 +108,26 @@
   svcBeats.forEach(function (b) { b.rule = true; b.drawn = -1; });
   var filmBeats = allBeats.filter(function (b) { return !b.el.classList.contains("beat-svc"); });
 
-  /* How many screens of scroll the whole service cycle occupies. Six lines
-     across 2.2 screens is roughly a third of a screen each, which is quick
-     without being a flicker. It puts the first line at full strength while
-     the hero is a third of the way out and the second while it is still
-     faintly on screen, which is what was asked for, and the whole run is
-     over before the film is a fifth done. */
-  var SVC_SPAN = 2.2;
+  /* How many screens of scroll the whole service cycle occupies, and the
+     number that matters most in this file.
+
+     The hero section is exactly ONE screen tall. The film carries on as the
+     background of the whole page, but the content sections start arriving at
+     one screen down, and these captions live in the fixed hero layer above
+     them. So anything still painting past one screen paints ON TOP of the
+     section somebody is trying to read, which is exactly what it looked
+     like: a couple of faded texts floating over the content. Running to 2.2
+     screens also meant the last line landed well past the point where the
+     page had visibly moved on, which read as a long empty scroll.
+
+     1.05 is therefore a hard ceiling, not a taste setting: the whole cycle
+     has to be finished by the time the first section is in view. That is
+     what set the number of lines. Four fit at a readable pace inside it;
+     six did not, and the two that had to go (framing and decks, ceilings
+     and trim) are both named in the services section immediately below.
+     If a line is ever added here, this number cannot simply grow to make
+     room for it. */
+  var SVC_SPAN = 1.05;
 
   /* ?sy=<screens> pretends the page is scrolled that many viewport heights
      down, without scrolling it. Headless capture cannot scroll (under a

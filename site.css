@@ -539,9 +539,6 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .work-grid button:hover img,.work-grid button:focus-visible img{transform:scale(1.03);filter:none}
 .work-grid figcaption{position:absolute;left:0;right:0;bottom:0;padding:26px 12px 10px;font:500 11.5px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(to top,rgba(8,8,6,.7),transparent);pointer-events:none}
 .work-note{margin-top:14px;font-size:14px;color:var(--ink-2)}
-.work-grid figure.highlight{position:relative}
-.work-grid figure.highlight::after{content:"";position:absolute;inset:14px;border:1px solid var(--ink);pointer-events:none;z-index:3}
-.work-grid figure.highlight figcaption{text-align:center}
 /* Cursor spotlight lives in extras.css, as a ::after behind the content in the accent colour.
    There used to be a second one here as a ::before in white at z-index 2, which sat OVER the
    content and stacked with the other on every hover. Removed. If a spotlight is ever needed
@@ -3212,4 +3209,63 @@ body.rm .film-stage .beat-static .row{
 }
 @media (prefers-reduced-motion:reduce){
   .beat-svc .beat-line::after{transform:none;transition:none}
+}
+
+/* ================================================================ the centred hero, actually centred
+   The headline sat about 200px right of the kicker, the lede and the
+   buttons, which all shared an axis. Measured, the cause was exact:
+   ".beat" is capped at 640px inside the 768px query, so .beat-hero's
+   content box is 576px after its padding, while the headline carries
+   "width:min(30ch,88vw)" from the hero-type block, which at this size is
+   1017px. A block wider than its containing block cannot be centred by
+   auto margins: they resolve to zero and the overflow all goes to the end
+   side, which is why the browser reported a margin-inline-end of -441px.
+   It was not a text-align problem and no amount of centring the text would
+   have moved it.
+
+   Two changes, and both are needed. Capping the headline at 100% alone
+   would leave a 58px heading trying to wrap inside 576px, which is barely
+   wider than the word "Renovations" and stacks the sentence four lines
+   deep into the crest. So the centred hero block gets a frame worth having
+   first, and only then is the headline held inside it. The 88vw guard is
+   dropped because the block it now sits in is already capped against the
+   viewport, so it can no longer be the narrower of the two. */
+.beat-hero,.beat-static{
+  max-width:min(960px,92vw);
+}
+.film .film-stage .beat-hero h1,
+.film .film-stage .beat-static h1{
+  width:min(30ch,100%);
+  max-width:100%;
+}
+
+/* The white hairline sitting inside the walk-in shower photo. It was a
+   deliberate flourish on one "highlight" figure back when this was a grid
+   of many photos and one of them was meant to be picked out. In a carousel
+   every cell is already picked out by being the one in focus, so the inset
+   border stopped reading as emphasis and started reading as a white box
+   drawn on top of somebody's tiling. The class is off that figure; these
+   two rules go with it so nothing re-applies it by accident. */
+.work-grid figure.highlight::after{content:none}
+
+/* ================================================================ the section watermarks
+   The enormous section number set at under 3% ink behind each section is
+   gone. It was always decoration rather than information -- the same
+   figure is already printed, legibly, in the section label a few pixels
+   away -- and at that opacity it did not read as a watermark in the
+   surface. It read as some text faintly showing through from somewhere
+   else, which is exactly how it was described, and it was competing with
+   the film for the same job: this page already has one environment behind
+   everything, and that environment is the film.
+
+   Killed with content:none rather than by deleting the block above, so the
+   parallax rules that also name .section::before (motion, reduced motion,
+   the pointer-zoom variant) keep a target that exists and cannot start
+   applying transforms to some other pseudo-element. The numbers are still
+   on the markup as data-n, and still printed by the section labels, so
+   nothing is lost if they are ever wanted back. */
+.section::before,
+.section.light::before,
+.section.panel::before{
+  content:none;
 }
