@@ -3176,7 +3176,7 @@ body.rm .film-stage .beat-static .row{
   .film-stage .beat h1{letter-spacing:-.008em}
 }
 .brand{flex-shrink:0}
-@media (min-width:900px) and (max-width:1080px){
+@media (min-width:900px) and (max-width:1180px){
   .brand span{display:none}
 }
 
@@ -3351,3 +3351,36 @@ body.rm .film-stage .beat-static .row{
 }
 body.rm .svc-detail{perspective:none}
 body.rm .svc-detail > li{transform:none}
+
+/* ================================================================ the header at middle widths
+   The nav grew from five links to seven, which pushed the bar past what
+   the middle widths can hold, and everything in it is a flex item that
+   shrinks before it wraps. The brand was already stopped from shrinking;
+   the two buttons were not, so at about 1100px they were squeezed until
+   "Get a quote" clipped to "et a quote" inside its own pill. Nothing in
+   this bar should ever be narrower than its content: there is no good
+   version of a half-drawn word.
+
+   With nothing shrinkable left, the only variable is the brand wordmark,
+   and it now goes at 1180 rather than 1080. That is measured, not picked:
+   nav 657 + quote 129 + call 94 + three 14px gaps + the page gutter needs
+   about 1010px on its own, and the word adds roughly 165 more. */
+.btn-quote,.btn-call{flex-shrink:0}
+
+/* ================================================================ the menu, now nine items
+   It was built for five. At nine, the old 8vw type came to roughly 800px
+   of content, which fits an 844px phone and does not fit a 667px one, and
+   the panel is position:fixed with no overflow, so what happens there is
+   the contact details at the foot get silently clipped off the bottom.
+
+   Two changes, and the second is the one that matters. The type comes down
+   so nine items fit a small phone honestly. overflow-y:auto is the
+   guarantee: type size is a guess about a device, scrolling is not, and
+   the next thing added to this list should not be able to push the phone
+   number off the screen again. -webkit-overflow-scrolling keeps it feeling
+   native on iOS. */
+.menu{overflow-y:auto;-webkit-overflow-scrolling:touch}
+.menu li a{
+  font-size:clamp(24px,6.4vw,34px);
+  padding:11px 0;
+}
