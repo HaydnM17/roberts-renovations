@@ -185,6 +185,10 @@
   function onScroll() {
     if (reduced()) { landAllSections(); return; }
     if (scrollRaf === null) scrollRaf = requestAnimationFrame(scrollFrame);
+    /* the tiles' lean is a function of where they are in the frame, so it is a scroll effect
+       first and a pointer effect second. This is the only thing driving it on a touch screen.
+       kickTiles coalesces onto one rAF, so a burst of scroll events costs one pass. */
+    kickTiles();
   }
 
   var resizeT = null;
@@ -231,12 +235,156 @@
     forceLand: function () { landAllSections(); }
   };
 
+  /* ---------------------------------------------------------------- the glass service tiles
+     Eight panes that tilt rather than spin. Two inputs, written as separate custom properties
+     and summed by the CSS, because a single transform property cannot be owned by two things:
+
+       --tiltX / --tiltY   where the pointer is inside the tile, fine pointers only
+       --scrollTilt        where the tile is in the viewport, everyone including touch
+       --glossX / --glossY / --gloss   where the highlight sits and how strong it is
+
+     The scroll term is what makes this work on a phone, where there is no pointer at all: a
+     tile leans back while it is still low in the frame and comes level as it reaches the middle,
+     so they lift towards you as you scroll into them. It is small, 1.6 degrees end to end,
+     because it is multiplied by however many tiles are on screen and each one is its own
+     backdrop-filter surface.
+
+     Only tiles actually on screen are written to, for the same reason. An IntersectionObserver
+     keeps the live set, and nothing is written at all when the numbers have not moved enough to
+     see, because every write here is a style recalculation on a compositing layer that is
+     already expensive. */
+  var TILT_MAX = 5.5;        /* degrees at the corner of a tile under the pointer */
+  var SCROLL_TILT = 1.6;     /* degrees between the bottom of the frame and the middle */
+  var tiles = [], liveTiles = [], tileRaf = null;
+
+  function writeTile(t, tiltX, tiltY, scrollTilt, glossX, glossY, gloss) {
+    var s = t.el.style;
+    if (Math.abs(tiltX - t.tiltX) > 0.04) { t.tiltX = tiltX; s.setProperty("--tiltX", tiltX.toFixed(2)); }
+    if (Math.abs(tiltY - t.tiltY) > 0.04) { t.tiltY = tiltY; s.setProperty("--tiltY", tiltY.toFixed(2)); }
+    if (Math.abs(scrollTilt - t.scrollTilt) > 0.04) {
+      t.scrollTilt = scrollTilt; s.setProperty("--scrollTilt", scrollTilt.toFixed(2));
+    }
+    if (glossX !== null && Math.abs(glossX - t.glossX) > 0.6) {
+      t.glossX = glossX; s.setProperty("--glossX", glossX.toFixed(1) + "%");
+    }
+    if (glossY !== null && Math.abs(glossY - t.glossY) > 0.6) {
+      t.glossY = glossY; s.setProperty("--glossY", glossY.toFixed(1) + "%");
+    }
+    if (gloss !== null && Math.abs(gloss - t.gloss) > 0.02) {
+      t.gloss = gloss; s.setProperty("--gloss", gloss.toFixed(2));
+    }
+  }
+
+  /* Pointer tilt eases back to level on its own once the pointer leaves, rather than snapping,
+     which is the difference between a pane settling and a pane being dropped. */
+  function tileFrame() {
+    tileRaf = null;
+    var vh = win.innerHeight, moving = false;
+    for (var i = 0; i < liveTiles.length; i++) {
+      var t = liveTiles[i];
+      var r = t.el.getBoundingClientRect();
+      /* 1 when the tile's middle is at the bottom of the frame, 0 at the middle of the frame
+         and above: it leans back on the way in and levels off, never the other way. */
+      var mid = r.top + r.height / 2;
+      var lean = clamp((mid - vh * 0.5) / (vh * 0.5), 0, 1);
+      var wantX = t.overX, wantY = t.overY;
+      t.curX += (wantX - t.curX) * 0.18;
+      t.curY += (wantY - t.curY) * 0.18;
+      if (Math.abs(wantX - t.curX) > 0.01 || Math.abs(wantY - t.curY) > 0.01) moving = true;
+      writeTile(t, t.curX, t.curY, lean * SCROLL_TILT, null, null, null);
+    }
+    if (moving) tileRaf = requestAnimationFrame(tileFrame);
+  }
+
+  function kickTiles() {
+    if (reduced() || !liveTiles.length) return;
+    if (tileRaf === null) tileRaf = requestAnimationFrame(tileFrame);
+  }
+
+  function onTileMove(e) {
+    if (reduced() || !pmq.matches) return;
+    var t = e.currentTarget.__tile;
+    if (!t) return;
+    var r = e.currentTarget.getBoundingClientRect();
+    var nx = clamp((e.clientX - r.left) / r.width, 0, 1);
+    var ny = clamp((e.clientY - r.top) / r.height, 0, 1);
+    /* rotateY follows the horizontal position, rotateX the vertical and inverted, so the corner
+       nearest the pointer comes towards you. Inverting one of them is what separates "tilting
+       under your hand" from "leaning away from it". */
+    t.overX = (nx - 0.5) * 2 * TILT_MAX;
+    t.overY = -(ny - 0.5) * 2 * TILT_MAX;
+    writeTile(t, t.curX, t.curY, t.scrollTilt, nx * 100, ny * 100, 1);
+    kickTiles();
+  }
+
+  function onTileLeave(e) {
+    var t = e.currentTarget.__tile;
+    if (!t) return;
+    t.overX = 0; t.overY = 0;
+    writeTile(t, t.curX, t.curY, t.scrollTilt, null, null, 0.55);
+    e.currentTarget.classList.remove("is-press");
+    kickTiles();
+  }
+
+  /* Touch gets the press state and the highlight, never the pointer tilt: a finger is ON the
+     tile, so tilting it away from the finger looks like the tile dodging the touch. */
+  function onTileDown(e) {
+    var el = e.currentTarget, t = el.__tile;
+    if (!t || reduced()) return;
+    if (e.pointerType === "touch") {
+      var r = el.getBoundingClientRect();
+      writeTile(t, t.curX, t.curY, t.scrollTilt,
+        clamp((e.clientX - r.left) / r.width, 0, 1) * 100,
+        clamp((e.clientY - r.top) / r.height, 0, 1) * 100, 1);
+      el.classList.add("is-press");
+    }
+  }
+  function onTileUp(e) {
+    var el = e.currentTarget, t = el.__tile;
+    el.classList.remove("is-press");
+    if (t && !reduced()) writeTile(t, t.curX, t.curY, t.scrollTilt, null, null, 0.55);
+  }
+
+  function initTiles() {
+    var els = $$(".svc-detail > li");
+    if (!els.length) return;
+    tiles = els.map(function (el) {
+      var t = {
+        el: el, overX: 0, overY: 0, curX: 0, curY: 0,
+        tiltX: 0, tiltY: 0, scrollTilt: -1, glossX: -1, glossY: -1, gloss: -1
+      };
+      el.__tile = t;
+      on(el, "pointermove", onTileMove, { passive: true });
+      on(el, "pointerleave", onTileLeave, { passive: true });
+      on(el, "pointerdown", onTileDown, { passive: true });
+      on(el, "pointerup", onTileUp, { passive: true });
+      on(el, "pointercancel", onTileUp, { passive: true });
+      return t;
+    });
+    if ("IntersectionObserver" in win) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          var t = en.target.__tile;
+          if (!t) return;
+          var at = liveTiles.indexOf(t);
+          if (en.isIntersecting && at === -1) liveTiles.push(t);
+          else if (!en.isIntersecting && at !== -1) liveTiles.splice(at, 1);
+        });
+        kickTiles();
+      }, { rootMargin: "15% 0px" });
+      tiles.forEach(function (t) { io.observe(t.el); });
+    } else {
+      liveTiles = tiles.slice();
+    }
+  }
+
   /* ---------------------------------------------------------------- boot */
   function boot() {
     motionSections = $$(".section");
     root.style.setProperty("--mx", "0.0000");
     root.style.setProperty("--my", "0.0000");
     setPointerGate();
+    initTiles();
     on(win, "scroll", onScroll, { passive: true });
     on(win, "resize", onResize);
     if (reduced()) landAllSections(); else onScroll();

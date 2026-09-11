@@ -3249,3 +3249,105 @@ body.rm .film-stage .beat-static .row{
    1.05, so the last of the fade happens while the stage itself is scrolling
    away. That is not a bug, it is part of why the handover reads: the final
    caption leaves under its own travel AND with the page. */
+
+/* ================================================================ the service tiles, as glass
+   These eight were a hairline table: one shared background with 1px gaps
+   showing through as dividers, wrapped in a single border. That reads as
+   one object with eight compartments. They are now eight separate panes
+   that float.
+
+   THE GLASS. The surface is deliberately thin, because the thing that
+   makes it read as glass is not the fill, it is that you can see the film
+   moving through it. backdrop-filter does the work; the gradient only
+   tilts the sheet slightly so it catches light at the top edge the way a
+   real pane does. The crisp edge is two parts: a hairline border for the
+   cut, and an inset highlight on the top edge alone for the thickness. A
+   single flat border reads as a box, not as glass.
+
+   THE 3D. Perspective lives on the list, not the tile, so all eight share
+   one vanishing point and tilt as a set rather than each one having its
+   own private camera. That is the difference between a group of panes and
+   eight unrelated cards.
+
+   --tiltX/--tiltY (pointer) and --scrollTilt (position in the viewport) are
+   written by motion.js and are summed here rather than there, so the two
+   inputs cannot fight over one transform property. Every one has a resting
+   fallback, so with motion.js absent these are simply flat glass panes and
+   the page is still correct.
+
+   COST. backdrop-filter on eight elements that are also being transformed
+   is not cheap, and each one becomes its own containing block. motion.js
+   only updates tiles that are actually on screen, and only runs the
+   pointer half on a fine pointer. The scroll tilt is tiny on purpose: it
+   has to survive being multiplied by eight on a phone.
+   ---------------------------------------------------------------------- */
+.svc-detail{
+  gap:14px;
+  background:none;
+  border:0;
+  border-radius:0;
+  overflow:visible;
+  perspective:1100px;
+  perspective-origin:50% 40%;
+}
+@media (min-width:680px){.svc-detail{gap:14px}}
+.svc-detail > li{
+  position:relative;
+  isolation:isolate;
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.085),rgba(255,255,255,.022) 42%,rgba(255,255,255,.05));
+  backdrop-filter:blur(13px) saturate(128%);
+  -webkit-backdrop-filter:blur(13px) saturate(128%);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.2),
+    0 1px 2px rgba(0,0,0,.3),
+    0 18px 38px rgba(0,0,0,.42);
+  transform:
+    rotateX(calc((var(--tiltY,0) + var(--scrollTilt,0)) * 1deg))
+    rotateY(calc(var(--tiltX,0) * 1deg));
+  transform-style:preserve-3d;
+  transition:box-shadow .4s var(--ease-out),border-color .4s var(--ease-out),background-color .35s var(--ease-out);
+}
+/* the moving highlight, parked in the corner until a pointer says otherwise */
+.svc-detail > li::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  border-radius:inherit;
+  pointer-events:none;
+  background:radial-gradient(38% 55% at var(--glossX,30%) var(--glossY,0%),
+    rgba(255,255,255,.16),rgba(255,255,255,.05) 45%,transparent 72%);
+  opacity:var(--gloss,.55);
+  transition:opacity .4s var(--ease-out);
+}
+.svc-detail > li:hover{
+  background:
+    linear-gradient(160deg,rgba(255,255,255,.115),rgba(255,255,255,.035) 42%,rgba(255,255,255,.07));
+  border-color:rgba(255,255,255,.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    0 1px 2px rgba(0,0,0,.3),
+    0 26px 54px rgba(0,0,0,.5);
+}
+.svc-detail > li:hover::before{opacity:1}
+/* a tile being touched presses in rather than tilting away under the finger */
+.svc-detail > li.is-press{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    0 1px 2px rgba(0,0,0,.3),
+    0 8px 18px rgba(0,0,0,.45);
+}
+
+/* Nothing tilts, nothing floats, and the glass stays because a static pane
+   is not motion. The transform is dropped rather than zeroed so no tile
+   keeps a compositing layer it has no use for. */
+@media (prefers-reduced-motion:reduce){
+  .svc-detail{perspective:none}
+  .svc-detail > li{transform:none;transition:none}
+  .svc-detail > li::before{transition:none}
+}
+body.rm .svc-detail{perspective:none}
+body.rm .svc-detail > li{transform:none}
