@@ -790,12 +790,43 @@
     if (lbCap) lbCap.textContent = btn.dataset.caption || "";
     if (lbCount) lbCount.textContent = (lbIndex + 1) + " / " + shots.length;
   }
+  /* The lightbox calls itself aria-modal="true" and traps the Tab key, but a
+     Tab trap only stops sequential focus. A screen reader's virtual cursor
+     does not use Tab, so it could still read straight through the header,
+     the nav and the section behind an open dialog, which is exactly what
+     aria-modal claims cannot happen. The mobile menu already gets this
+     right; inert is what actually makes it true, so the lightbox uses the
+     same two elements. */
+  /* Everything at the top level except the dialog itself, rather than a
+     hand-written list of two or three elements that will go stale the next
+     time something is added to the page. The menu's version can only name
+     main and footer, because the button that closes the menu lives in the
+     header; the lightbox has no such constraint, so it can cover the header
+     and the sticky call bar too.
+
+     Only elements this function actually set are cleared again, so an
+     element that was already inert for its own reasons keeps its state. */
+  var lbInerted = [];
+  function lbInert(on) {
+    if (on) {
+      lbInerted = [];
+      Array.prototype.forEach.call(body.children, function (el) {
+        if (el === lb || el.hasAttribute("inert")) return;
+        el.setAttribute("inert", "");
+        lbInerted.push(el);
+      });
+    } else {
+      lbInerted.forEach(function (el) { el.removeAttribute("inert"); });
+      lbInerted = [];
+    }
+  }
   function openLb(btn) {
     if (!lb) return;
     collectShots();
     lbOpener = btn;
     showShot(shots.indexOf(btn));
     lb.hidden = false;
+    lbInert(true);
     requestAnimationFrame(function () { lb.classList.add("open"); if (lbClose) lbClose.focus(); });
     body.style.overflow = "hidden";
   }
@@ -804,6 +835,9 @@
     lb.classList.remove("open");
     win.setTimeout(function () { lb.hidden = true; if (lbImg) lbImg.src = ""; }, reduced() ? 0 : 280);
     body.style.overflow = "";
+    /* lifted BEFORE focus returns: focusing an element inside an inert
+       subtree silently does nothing, which would strand focus on <body>. */
+    lbInert(false);
     if (lbOpener) lbOpener.focus();
   }
   function wireWorkGrid() {

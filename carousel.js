@@ -153,8 +153,15 @@
     next.setAttribute("aria-label", cfg.nextLabel);
     next.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-    strip.appendChild(prev);
-    strip.appendChild(next);
+    /* Inserted BEFORE the view, not appended after it. The buttons are
+       absolutely positioned either side of the strip, so their place in the
+       DOM has no effect on where they appear, but it decides where they sit
+       in the tab order. Appended, a keyboard visitor had to tab through
+       every cell in the strip, six service tiles or every visible work
+       photo, before reaching the controls that move the strip. That is
+       backwards: the arrows are how you drive this thing. */
+    strip.insertBefore(prev, view);
+    strip.insertBefore(next, view);
 
     /* ---------------------------------------------------------- geometry */
     var setWidth = 0;

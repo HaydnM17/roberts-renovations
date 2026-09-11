@@ -28,8 +28,8 @@
 <link rel="stylesheet" href="site.css?v=11">
 <script src="occlude.js?v=3" defer></script>
 <script src="reviews-slider.js?v=1" defer></script>
-<script src="carousel.js?v=2" defer></script>
-<script src="script.js?v=24" defer></script>
+<script src="carousel.js?v=3" defer></script>
+<script src="script.js?v=25" defer></script>
 <script src="motion.js?v=1" defer></script>
 <script type="application/ld+json">
 {
@@ -582,6 +582,10 @@
     </div>
     <div class="contact-grid">
       <form class="form" id="enquiry" action="/api/contact" method="POST" novalidate>
+        <!-- Nothing on this form is optional, so one line says so once rather than four
+             asterisks saying it four times. Before this there was no cue at all until a
+             failed submit painted a red border, which is late and, on its own, colour only. -->
+        <p class="form-note">Everything here is needed.</p>
         <div class="field">
           <label for="f-name">Your name</label>
           <input id="f-name" name="name" type="text" autocomplete="name" aria-describedby="err-name" required>
