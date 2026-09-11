@@ -209,7 +209,7 @@ body.menu-open .site-header::before{opacity:0}
    for the first third of the page. The first third of the film is an empty lot and a dig, which
    is the least visually eventful part of it, so the two problems compounded. At 420 a screen of
    scrolling advances the build about a third. Keep INTRO.full in script.js in step with this. */
-.film-scroll{position:relative;height:210svh}
+.film-scroll{position:relative;height:185svh}
 .film-stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#1c1b17}
 .film-poster,.film-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .film-poster{opacity:1;transition:opacity .6s}
@@ -3227,3 +3227,25 @@ body.rm .film-stage .beat-static .row{
   .reviews-cta .row{display:flex;flex-wrap:nowrap;justify-content:center;gap:8px;width:100%}
   .reviews-cta .row .btn{padding:0 11px;font-size:12.5px}
 }
+
+/* The hero came down again, 210svh to 185svh, and the number was chosen by
+   arithmetic rather than taste.
+
+   The last caption peaks at 0.90 screens of scroll and is gone by 1.05. The
+   first section's top edge enters the viewport at (height - 100svh), and its
+   heading is 112px further down, so the heading lands at (height/100 - 1) +
+   0.127 screens. At 210 that put the heading at 1.23, comfortably after the
+   caption had finished: a gap, which is what was reported. At 185 it lands
+   at 0.98, while the caption is still at about half opacity and a little
+   under halfway up the frame. That is the overlap asked for, the section
+   arriving while the words are still leaving.
+
+   Do not go much below this. At 180 the heading arrives while the caption
+   is still at 93% and has barely started to move, so the section slides in
+   underneath text at full strength instead of behind text on its way out.
+
+   One consequence worth knowing: the cycle now outlives the pin. The stage
+   is sticky for (height - 100svh) = 0.85 screens, and the captions run to
+   1.05, so the last of the fade happens while the stage itself is scrolling
+   away. That is not a bug, it is part of why the handover reads: the final
+   caption leaves under its own travel AND with the page. */
