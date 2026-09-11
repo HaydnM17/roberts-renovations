@@ -3179,3 +3179,29 @@ body.rm .film-stage .beat-static .row{
 @media (min-width:900px) and (max-width:1080px){
   .brand span{display:none}
 }
+
+/* ================================================================ the caption rule, centred
+   The gold rule under each service caption was drawn from the LEFT edge of
+   .beat-line, and that box is far wider than the words in it: measured at
+   1280, the box runs 271 to 985 while the centred text only runs 421 to
+   835. So a 74px mark was being drawn 150px to the left of where the
+   sentence starts, floating in empty space under nothing. It did not read
+   as an underline, it read as a stray mark.
+
+   Centred under centred text, and drawn from the middle outwards, which is
+   the only anchor that holds when the caption is one line or two and when
+   the text width changes with every caption. Matching the exact text width
+   is not available to CSS here: the box is what is measurable, the last
+   wrapped line is what you would want, and they are not the same thing.
+
+   Faster too, .32s rather than .5s. It is a mark that confirms the line has
+   landed, so it should be finished about when the eye reaches it. The
+   negative margin does the centring rather than a translateX, because the
+   transform property is already carrying the scaleX that draws it. */
+.beat-svc .beat-line::after{
+  left:50%;
+  margin-left:-55px;
+  width:110px;
+  transform-origin:50% 50%;
+  transition:transform .32s var(--ease-out);
+}
