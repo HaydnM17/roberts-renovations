@@ -2453,13 +2453,27 @@ body.rm .env .film-poster{opacity:1}
    The caption block is excluded from the caption engine for this reason, so nothing else is
    writing a transform to it and these two do not fight. */
 :root{--heroOut:0}
+/* The travel and the fade were both raised (crest -52 to -84svh, caption
+   block -34 to -66svh) for a reason that is easy to undo by accident.
+
+   The service captions sit at bottom:10svh, and so does this caption block.
+   At the old numbers the first caption reached full strength while the hero
+   had only climbed about 14svh, so "Demolition and tear-outs." printed
+   straight across the "Call (905) 869-6353" button and left both
+   unreadable. The block now clears about 27svh by the same point, which is
+   past the top of the caption band.
+
+   The fade multipliers went up with the travel so the two stay in step. The
+   hero is still visibly on screen when the first caption lands, which is
+   the thing that was asked for, it is just fainter and further up. Lowering
+   either number puts the collision back. */
 .film-crest{
-  transform:translate3d(0,calc(var(--heroOut) * -52svh),0);
-  opacity:calc(1 - var(--heroOut) * 1.35);
+  transform:translate3d(0,calc(var(--heroOut) * -84svh),0);
+  opacity:calc(1 - var(--heroOut) * 1.7);
 }
 .beat-hero{
-  transform:translate3d(0,calc(var(--heroOut) * -34svh),0);
-  opacity:calc(1 - var(--heroOut) * 1.15);
+  transform:translate3d(0,calc(var(--heroOut) * -66svh),0);
+  opacity:calc(1 - var(--heroOut) * 1.55);
   visibility:visible;
 }
 /* the crest leads and the words follow it up, rather than the two travelling as one block */
