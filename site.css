@@ -418,7 +418,7 @@ h3{font:800 22px/1.15 var(--display);letter-spacing:-.01em}
 }
 .svc-tiles img{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  filter:grayscale(.5) brightness(.5);
+  filter:brightness(.72) saturate(1.08);
   transform:scale(1.03);
   transition:transform .8s var(--ease-out),filter .45s var(--ease-out);
 }
@@ -437,7 +437,7 @@ h3{font:800 22px/1.15 var(--display);letter-spacing:-.01em}
   content:"";display:block;width:42px;height:3px;margin-top:11px;background:var(--accent);
   transform-origin:0 50%;transition:transform .45s var(--ease-out);
 }
-.svc-tiles a:hover img,.svc-tiles a:focus-visible img{filter:grayscale(0) brightness(.62);transform:scale(1.09)}
+.svc-tiles a:hover img,.svc-tiles a:focus-visible img{filter:brightness(.88) saturate(1.14);transform:scale(1.09)}
 .svc-tiles a:hover span::after,.svc-tiles a:focus-visible span::after{transform:scaleX(2.4)}
 /* The generic section reveal treats the whole list as one child of .wrap, so the tiles would
    all arrive together. Staggering them is what makes a grid read as being dealt out rather than
@@ -534,7 +534,7 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .work-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:34px}
 .work-grid figure{position:relative;margin:0;background:var(--ground-3);border-radius:2px;overflow:hidden;aspect-ratio:3/4}
 .work-grid figure.wide{grid-column:span 2;aspect-ratio:16/10}
-.work-grid img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05);transition:transform .6s var(--ease-out),filter .4s}
+.work-grid img{width:100%;height:100%;object-fit:cover;filter:contrast(1.04) saturate(1.05);transition:transform .6s var(--ease-out),filter .4s}
 .work-grid button{display:block;width:100%;height:100%;text-align:left;position:relative;z-index:1}
 .work-grid button:hover img,.work-grid button:focus-visible img{transform:scale(1.03);filter:none}
 .work-grid figcaption{position:absolute;left:0;right:0;bottom:0;padding:26px 12px 10px;font:500 11.5px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(to top,rgba(8,8,6,.7),transparent);pointer-events:none}
@@ -3126,3 +3126,55 @@ body.rm .film-stage .beat-static .row{
    them), reusing the outline rule above rather than needing a separate one
    here.
    ------------------------------------------------------------------------ */
+
+/* ================================================================ carousel cells: colour and shape
+   Two corrections, both asked for directly.
+
+   1. COLOUR. Both carousels used to sit permanently desaturated and only
+      returned to colour on hover: the services tiles at
+      "grayscale(.5) brightness(.5)", the work photos at "grayscale(1)".
+      On a touch screen there is no hover, so on a phone the carousel was
+      simply a black and white carousel, and on desktop only the one tile
+      under the cursor was ever in colour. The grayscale is gone from both
+      resting states (see ".svc-tiles img" and ".work-grid img" above); the
+      remaining brightness on the services tiles is not decoration, it is
+      what the giant white word sits on, so it stays.
+
+   2. SHAPE. The cells were hard-cornered boxes on a page whose radius
+      elsewhere is a near-invisible 2px. At carousel scale that reads as
+      squared-off, so the cells (and only the cells, not the tiles wherever
+      else these classes might land) get a real radius, and the services
+      tile ratio goes from 4/3 to a wider 3/2. The work carousel's landscape
+      cells move 4/3 -> 3/2 with them, which is why the track's leading
+      padding below is recalculated in the same step: that padding centres
+      the FIRST cell, the first work cell is a ".wide" one, and the number
+      it multiplies --ch by has to be that cell's real ratio or the carousel
+      opens off-centre. Changing one without the other is the trap here.
+   ---------------------------------------------------------------------- */
+.svc-tiles.car-track > li.car-cell > a{
+  border-radius:14px;
+  aspect-ratio:3/2;
+}
+.work-grid.car-track > figure.car-cell{
+  border-radius:14px;
+}
+.work-grid.car-track > figure.car-cell.wide{
+  aspect-ratio:3/2;
+}
+.work-grid.car-track{
+  padding-inline:calc(50% - (var(--ch) * 3 / 2) / 2);
+}
+/* The focus ring on a work cell is an outline (see the note above it), and an
+   outline follows the border radius on its own. The services focus ring is a
+   box-shadow on the anchor, which does the same. Neither needs restating. */
+
+/* The work photo captions never appeared, on the grid or on the carousel.
+   ".work-grid button" is position:relative with z-index:1 and fills the
+   figure; ".work-grid figcaption" is position:absolute with z-index auto.
+   The figure is position:relative with z-index auto, so it is NOT a
+   stacking context, which means the two are siblings in the same one and
+   the explicit 1 always paints over the implicit 0: the button's photo
+   covered the caption completely. The caption needs to sit above the
+   button, and it already carries pointer-events:none so lifting it cannot
+   swallow the click that opens the lightbox. */
+.work-grid figcaption{ z-index:2; }
