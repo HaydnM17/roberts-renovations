@@ -956,11 +956,21 @@
     on(goBtn, "click", function () {
       var li = stepEls[Math.round(bt)];
       if (!li) return;
+      /* Two different names, on purpose, and they must not be swapped.
+
+         data-job is the form's CATEGORY and has to match a chip that exists
+         in the contact form, so "Shower" and "Back deck" carry "Bathroom"
+         and "Deck or porch". The visible label is what the visitor actually
+         clicked. Writing the category into their message meant picking
+         "Shower" and watching the box fill with "Bathroom. ", which reads
+         like the page ignored them. The chip still lights up by category;
+         the sentence is in their words. */
       var job = li.getAttribute("data-job") || li.textContent.trim();
+      var picked = li.textContent.trim() || job;
       var chip = doc.querySelector('.job-chips [data-job="' + job + '"]');
       if (chip && chip.getAttribute("aria-pressed") !== "true") chip.click();
       var msg = doc.getElementById("f-msg");
-      if (msg && !msg.value.trim()) msg.value = job + ". ";
+      if (msg && !msg.value.trim()) msg.value = picked + ". ";
       var target = doc.getElementById("contact");
       if (target) {
         var top = target.getBoundingClientRect().top + win.scrollY - (header ? header.offsetHeight - 1 : 0);
