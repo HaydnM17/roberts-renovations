@@ -35,10 +35,17 @@
   var LUM_SWITCH = 140;
   var SEAM = "#151513";
 
-  /* Slow motion, and barely any of it. Half speed for about five seconds, covering a twentieth of
-     the film. Enough to see the ground being broken and know the thing is alive, not enough to
-     spend any of the build before the visitor has done anything. */
-  var INTRO = { to: 0.05, rate: 0.5, glide: 1100, hold: 320 };
+  /* Slow motion, and barely any of it. Half speed until 4% of the film, then two and a half
+     seconds of smooth deceleration into a stop. Enough to see the ground being broken and know
+     the thing is alive, not enough to spend any of the build before the visitor has done
+     anything.
+
+     `to` came down from 0.05 when the glide grew from 1.1s to 2.6s, because the ramp is playing
+     film the whole time it runs: the longer settle spends about two thirds of a second more, so
+     the run-up gives back the same. Total film spent is roughly where it was, the stop is just
+     no longer abrupt. Move one of these two numbers without the other and the intro starts
+     eating into the build again. */
+  var INTRO = { to: 0.04, rate: 0.5, glide: 2600, hold: 320 };
 
   var rmq = matchMedia("(prefers-reduced-motion: reduce)");
   var portraitQ = matchMedia("(orientation: portrait)");
@@ -521,16 +528,48 @@
   }
 
   /* Ramp the rate down rather than cutting playback, so the last thing the eye sees is the
-     camera settling rather than a stop. Then pause on the frame it settled on. */
+     camera settling rather than a stop. Then pause on the frame it settled on.
+
+     The curve is a smoothstep on the RATE, not an ease-out, and that is the
+     whole point of this function. An ease-out front-loads the braking: the
+     old one took the rate from 0.5 to its 0.06 floor in 550ms and then sat
+     frozen at the floor for another 550ms before pausing, so what you saw
+     was a quick drop, an apparent stop, and then a real stop half a second
+     later. Smoothstep brakes gently at both ends and hardest in the middle,
+     which is what a thing coming to rest actually does, and it only reaches
+     the floor in the last fifth. Roughly sixteen frames of film over two and
+     a half seconds: slow enough to read as deceleration rather than a cut.
+
+     The floor exists because browsers clamp or stutter at very low
+     playbackRate, so the last sliver is held at a crawl and then paused. */
   function glideOut(then) {
-    var from = video.playbackRate || 1, t0 = performance.now();
-    (function step(now) {
-      var k = clamp((now - t0) / INTRO.glide, 0, 1);
-      var e = 1 - Math.pow(1 - k, 3);
-      try { video.playbackRate = Math.max(0.06, from * (1 - e)); } catch (err) {}
-      if (k < 1) { introRaf = requestAnimationFrame(step); return; }
+    var from = video.playbackRate || 1, t0 = performance.now(), done = false;
+    /* A longer glide widens a race that was always here: endIntro has
+       already removed the bail listeners by this point, so a scroll during
+       the ramp goes straight to onScroll, which starts scrubbing currentTime
+       while this function is still playing the video at the same time. Over
+       1.1s that was brief. Over 2.6s it is long enough to see. So the ramp
+       listens for the same three gestures itself and stops dead on any of
+       them, which is the right behaviour anyway: somebody who scrolls has
+       stopped watching the intro. */
+    function stop() {
+      if (done) return;
+      done = true;
+      off(win, "scroll", stop); off(win, "wheel", stop); off(win, "touchstart", stop);
+      if (introRaf !== null) { cancelAnimationFrame(introRaf); introRaf = null; }
       try { video.pause(); video.playbackRate = 1; } catch (err) {}
       then();
+    }
+    on(win, "scroll", stop, { passive: true });
+    on(win, "wheel", stop, { passive: true });
+    on(win, "touchstart", stop, { passive: true });
+    (function step(now) {
+      if (done) return;
+      var k = clamp((now - t0) / INTRO.glide, 0, 1);
+      var e = k * k * (3 - 2 * k);
+      try { video.playbackRate = Math.max(0.05, from * (1 - e)); } catch (err) {}
+      if (k < 1) { introRaf = requestAnimationFrame(step); return; }
+      stop();
     })(t0);
   }
 
