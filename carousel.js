@@ -345,12 +345,38 @@
     });
 
     view.addEventListener("scroll", paint, { passive: true });
-    strip.addEventListener("pointerenter", function () { hold("hover", true); });
-    strip.addEventListener("pointerleave", function () { hold("hover", false); });
+    /* Both of these pauses have to be able to CLEAR on a touch screen, and
+       neither could. This is why the services carousel stopped drifting on a
+       phone and never started again while the one below it kept going: the
+       services strip is the first one you swipe past, so it is the one that
+       gets stuck.
+
+       press: a pointerdown on the strip was only ever released by pointerup.
+       When a touch that starts on a horizontally scrollable strip turns into
+       a vertical page scroll, the browser takes the gesture over and fires
+       pointercancel INSTEAD of pointerup. So held.press latched true and the
+       drift never resumed. pointercancel now clears it too, and the
+       listeners are on window rather than the element because by the time
+       the gesture ends the finger is usually somewhere else entirely.
+
+       hover: a touch fires pointerenter as well, and its matching
+       pointerleave is not guaranteed. Hover is a mouse idea anyway, so touch
+       pointers are ignored outright rather than relied on to clean up. */
+    strip.addEventListener("pointerenter", function (e) {
+      if (e.pointerType === "touch") return;
+      hold("hover", true);
+    });
+    strip.addEventListener("pointerleave", function (e) {
+      if (e.pointerType === "touch") return;
+      hold("hover", false);
+    });
     strip.addEventListener("focusin", function () { hold("hover", true); });
     strip.addEventListener("focusout", function () { hold("hover", false); });
     view.addEventListener("pointerdown", function () { hold("press", true); });
     window.addEventListener("pointerup", function () { hold("press", false); }, { passive: true });
+    window.addEventListener("pointercancel", function () { hold("press", false); }, { passive: true });
+    window.addEventListener("touchend", function () { hold("press", false); }, { passive: true });
+    window.addEventListener("touchcancel", function () { hold("press", false); }, { passive: true });
     document.addEventListener("visibilitychange", function () { hold("hidden", document.hidden); });
 
     var motionQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;

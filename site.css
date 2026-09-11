@@ -3205,3 +3205,25 @@ body.rm .film-stage .beat-static .row{
   transform-origin:50% 50%;
   transition:transform .32s var(--ease-out);
 }
+
+/* ================================================================ the two review links on a phone
+   "Read them on Google" and "Read them on HomeStars" are 15px with 20px of
+   padding each side, which comes to more than a 390px screen has once the
+   page gutter is taken off, so they wrapped and stacked. Stacked is the
+   wrong shape for two equal alternatives: it reads as one primary action
+   and one afterthought.
+
+   They stay side by side and centred, paid for with a smaller label and
+   tighter padding rather than with shorter copy, because "Google" and
+   "HomeStars" alone lose the instruction. nowrap on the row is what stops
+   the wrap; the buttons keep their own white-space:nowrap and size to their
+   content, so neither can be squeezed into a clipped label. */
+@media (max-width:620px){
+  .reviews-cta{justify-content:center}
+  /* ".row" is only a flex container INSIDE a .beat. Out here it was a plain
+     block, so the two buttons were laying out as inline text and wrapping
+     like words, and gap/justify-content/flex-wrap were all inert on it.
+     That is why they stacked, and why setting a gap alone changed nothing. */
+  .reviews-cta .row{display:flex;flex-wrap:nowrap;justify-content:center;gap:8px;width:100%}
+  .reviews-cta .row .btn{padding:0 11px;font-size:12.5px}
+}
