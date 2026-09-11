@@ -210,7 +210,7 @@ body.menu-open .site-header::before{opacity:0}
    for the first third of the page. The first third of the film is an empty lot and a dig, which
    is the least visually eventful part of it, so the two problems compounded. At 420 a screen of
    scrolling advances the build about a third. Keep INTRO.full in script.js in step with this. */
-.film-scroll{position:relative;height:420svh}
+.film-scroll{position:relative;height:210svh}
 .film-stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#1c1b17}
 .film-poster,.film-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .film-poster{opacity:1;transition:opacity .6s}
@@ -3335,3 +3335,27 @@ body.rm .film-stage .beat-static .row{
    into each other. They now run between 0 and -.01em. Anything added here
    later should follow that, not the old numbers.
    ---------------------------------------------------------------------- */
+
+/* ================================================================ how long the hero is
+   .film-scroll was 420svh. The stage inside it is sticky at top:0 and one
+   screen tall, so the hero stayed pinned for (420 - 100) = 3.2 screens of
+   scrolling, and the first content section did not start until 4.2 screens
+   down the document. The service captions finish at 1.05 screens. That left
+   more than three screens of pinned hero with nothing on it but the film
+   and the corner readout, which is the "too much scrolling from the last
+   caption down to the actual content" this was reported as.
+
+   210svh pins the hero for 1.1 screens instead: the logo and headline leave
+   by 0.66, the four captions run from 0.10 to 1.05, and the first section
+   arrives immediately after. Nothing was lost, because the film is NOT tied
+   to this number. It scrubs against the whole document (see scrubEnd() in
+   script.js), so it still builds the whole way down the page and still
+   finishes near the foot of it, over a page that is now three screens
+   shorter.
+
+   The trap, for anyone changing this again: the scroll distance the hero
+   occupies is this height MINUS one screen, not this height. And measuring
+   it under file:// will lie to you, because ".film.static .film-scroll"
+   collapses it to 100svh when the film fails to load, which is always the
+   case from a local file. That is what made the first attempt at this fix
+   miss by three screens. */
