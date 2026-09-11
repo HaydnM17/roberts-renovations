@@ -80,11 +80,55 @@
   /* .beat-hero is deliberately excluded. Every other beat is driven by how far through the film
      the scroll has got; the hero block instead rides the hero exit, so it starts leaving the
      moment you scroll rather than waiting for the film to reach a threshold. */
-  var beats = film ? $$(".beat[data-in]", film).filter(function (el) {
+  var allBeats = film ? $$(".beat[data-in]", film).filter(function (el) {
     return !el.classList.contains("beat-hero");
   }).map(function (el) {
     return { el: el, a: +el.dataset.in, peak: +el.dataset.peak, b: +el.dataset.out, op: -1 };
   }) : [];
+
+  /* Two clocks, not one, and the reason is the whole point of this block.
+
+     The six service lines are a quick cycle that has to have STARTED while the
+     hero is still on screen: the first one lands before the logo and the
+     headline have finished leaving, and the second arrives while they are
+     still on their way out. The hero is gone by two thirds of a screen
+     (updateHeroExit), so anything that wants to overlap it has to be measured
+     in screens.
+
+     The film cannot supply that number. It is deliberately stretched across
+     the whole document now, so on the film's clock the first two thirds of a
+     screen is a rounding error and every caption landed several screens after
+     the hero had gone. That was the complaint.
+
+     .beat-final is the opposite case: it is the film's closing panel and
+     belongs at the end of the film, so it keeps the film's clock. Splitting
+     the list here rather than branching inside the paint loop means the loop
+     never has to know which clock it is on. */
+  var svcBeats = allBeats.filter(function (b) { return b.el.classList.contains("beat-svc"); });
+  svcBeats.forEach(function (b) { b.rule = true; b.drawn = -1; });
+  var filmBeats = allBeats.filter(function (b) { return !b.el.classList.contains("beat-svc"); });
+
+  /* How many screens of scroll the whole service cycle occupies. Six lines
+     across 2.2 screens is roughly a third of a screen each, which is quick
+     without being a flicker. It puts the first line at full strength while
+     the hero is a third of the way out and the second while it is still
+     faintly on screen, which is what was asked for, and the whole run is
+     over before the film is a fifth done. */
+  var SVC_SPAN = 2.2;
+
+  /* ?sy=<screens> pretends the page is scrolled that many viewport heights
+     down, without scrolling it. Headless capture cannot scroll (under a
+     virtual time budget, programmatic scrollTo does nothing), and the hero
+     exit, the service cycle and the film each measure scroll against a
+     different span, so ?p= cannot stand in for it: forcing one number into
+     three different clocks would photograph a moment that never happens.
+     Feeding all three off one virtual scroll position is the only way a
+     capture can prove the relative timing, which is the whole thing being
+     tuned here. Everything reads scrollPos() rather than win.scrollY. */
+  var FORCE_SY = qs.has("sy") ? Math.max(0, parseFloat(qs.get("sy")) || 0) : null;
+  function scrollPos() {
+    return FORCE_SY !== null ? FORCE_SY * win.innerHeight : win.scrollY;
+  }
 
   /* ---------------------------------------------------------------- state */
   var conf = FILM;
@@ -116,7 +160,7 @@
   var SCRUB_EASE = 1.7;
   function progress() {
     if (FORCE_P !== null) return FORCE_P;
-    var raw = clamp(win.scrollY / scrubEnd(), 0, 1);
+    var raw = clamp(scrollPos() / scrubEnd(), 0, 1);
     return introBase + (1 - introBase) * Math.pow(raw, SCRUB_EASE);
   }
 
@@ -126,7 +170,13 @@
      words wait to be scrolled. */
   function beatProgress() {
     if (FORCE_P !== null) return FORCE_P;
-    return clamp(win.scrollY / scrubEnd(), 0, 1);
+    return clamp(scrollPos() / scrubEnd(), 0, 1);
+  }
+
+  /* The service cycle's own clock: screens of scroll, not film position. */
+  function svcProgress() {
+    if (FORCE_P !== null) return FORCE_P;
+    return clamp(scrollPos() / Math.max(1, win.innerHeight * SVC_SPAN), 0, 1);
   }
 
   /* 0 through the hero and 1 by the time the first content section is properly in view. veil.css
@@ -148,7 +198,7 @@
   var lastHeroOut = -1;
   function updateHeroExit() {
     if (!stage) return;
-    var t = rmq.matches ? 0 : clamp(win.scrollY / (win.innerHeight * 0.66), 0, 1);
+    var t = rmq.matches ? 0 : clamp(scrollPos() / (win.innerHeight * 0.66), 0, 1);
     if (Math.abs(t - lastHeroOut) < 0.004) return;
     lastHeroOut = t;
     /* published on the root, not the stage, because the film scrim lives in the background layer
@@ -311,9 +361,16 @@
     return 1 - (p - b.peak) / Math.max(1e-4, b.b - b.peak);
   }
 
-  function updateBeats(p) {
-    for (var i = 0; i < beats.length; i++) {
-      var b = beats[i], raw = clamp(beatAlpha(b, p), 0, 1);
+  /* Called with no argument: it reads both clocks itself, so no call site has
+     to remember that there are two. */
+  function updateBeats() {
+    paintBeats(svcBeats, svcProgress());
+    paintBeats(filmBeats, beatProgress());
+  }
+
+  function paintBeats(list, p) {
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i], raw = clamp(beatAlpha(b, p), 0, 1);
       var e = raw * raw * (3 - 2 * raw);
       if (Math.abs(e - b.op) < 0.008) continue;
       var rising = p < b.peak;
@@ -322,6 +379,21 @@
       b.el.style.transform = "translate3d(0," + ((1 - e) * (rising ? 16 : -12)).toFixed(1) + "px,0)";
       b.el.style.visibility = e > 0.004 ? "visible" : "hidden";
       b.el.style.pointerEvents = e > 0.6 ? "auto" : "none";
+      /* The accent rule under a service line draws itself once the line is
+         mostly there and retracts on the way out. It is a flag, not a
+         fraction, on purpose: CSS owns the half second it takes to draw, so
+         the rule sweeps at a constant speed no matter how fast the page is
+         being scrolled, while the line itself stays tied to the scroll. The
+         one thing that must not happen is writing this every frame, hence the
+         stored last value: it is a variable a transition depends on, and
+         rewriting it mid-transition restarts the sweep. */
+      if (b.rule) {
+        var drawn = e > 0.55 ? 1 : 0;
+        if (drawn !== b.drawn) {
+          b.drawn = drawn;
+          b.el.style.setProperty("--beatOn", drawn);
+        }
+      }
     }
   }
 
@@ -438,7 +510,7 @@
       seekBusy = false; pendingTime = null;
       var p = progress();
       shown = target = p;
-      updateBeats(beatProgress()); updateFilmChrome(p);
+      updateBeats(); updateFilmChrome(p);
       filmClass("intro", false);
     };
 
@@ -522,7 +594,7 @@
     filmOn = true;
     var p = progress();
     shown = target = p;
-    updateBeats(beatProgress()); updateFilmChrome(p);
+    updateBeats(); updateFilmChrome(p);
     /* let the poster win the bandwidth race, then stream the film in behind it */
     var img = new Image();
     var kick = function () { loadFilm(); };
@@ -570,7 +642,7 @@
       var p = progress();
       target = p;
       if (rafId === null) rafId = requestAnimationFrame(tick);
-      updateBeats(beatProgress());
+      updateBeats();
       updateFilmChrome(p);
     }
     if (header && filmScroll) {
@@ -1181,7 +1253,7 @@
       /* pin the page so a capture shows the real middle of the film */
       pinSections();
       $$(".drawable, .bracket-frame, .rule, .ambient, .ambient-lines").forEach(function (el) { el.classList.add("drawn"); });
-      updateBeats(FORCE_P); updateFilmChrome(FORCE_P);
+      updateBeats(); updateFilmChrome(FORCE_P);
     }
     if (reduced()) markReady();
     win.setTimeout(markReady, 8000);

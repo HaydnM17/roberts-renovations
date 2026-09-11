@@ -3178,3 +3178,38 @@ body.rm .film-stage .beat-static .row{
    button, and it already carries pointer-events:none so lifting it cannot
    swallow the click that opens the lightbox. */
 .work-grid figcaption{ z-index:2; }
+
+/* ================================================================ the service cycle
+   The six service lines are one quick run through what the business
+   actually does, and they now start while the hero is still leaving (the
+   timing lives in script.js's SVC_SPAN and in the data-in/peak/out on the
+   markup, not here). What this block adds is the thing that makes six
+   captions read as ONE cycle rather than six unrelated captions: a short
+   accent rule that draws itself under each line as the line arrives.
+
+   It is the same gesture as the rule under each word in the services
+   carousel, which is the point -- one motif repeated is what makes the
+   page feel authored. It is driven purely by the beat's own opacity, which
+   script.js is already writing to the wrapper, so there is no second
+   animation to keep in step with the first and nothing here runs on a
+   timer: like everything else in the hero, it only moves because somebody
+   scrolled. */
+.beat-svc .beat-line{
+  position:relative;
+  padding-bottom:18px;
+}
+.beat-svc .beat-line::after{
+  content:"";
+  position:absolute;
+  left:0;
+  bottom:0;
+  width:74px;
+  height:3px;
+  background:var(--accent);
+  transform:scaleX(var(--beatOn,0));
+  transform-origin:0 50%;
+  transition:transform .5s var(--ease-out);
+}
+@media (prefers-reduced-motion:reduce){
+  .beat-svc .beat-line::after{transform:none;transition:none}
+}
