@@ -37,10 +37,11 @@
 /* Roberts Renovations, spec mockup. Direction: dark site plan, dusk environment. Phone first. */
 
 /* ---------- Fonts, self-hosted ----------
-   Bricolage Grotesque and IBM Plex Sans are variable fonts, so one file covers every weight.
+   IBM Plex Sans is a variable font, so one file covers every weight. Zilla Slab is not: see the
+   note at the foot of this file for why its single 700 file claims the whole 400 to 900 range.
    Google served the same file under a different name per weight, which meant the browser
    downloaded the identical 46 KB three times. One file each, declared over a weight range. */
-@font-face{font-family:"Bricolage Grotesque";src:url("fonts/bricolage-grotesque.woff2") format("woff2");font-weight:200 800;font-style:normal;font-display:swap}
+@font-face{font-family:"Zilla Slab";src:url("fonts/zilla-slab-700.woff2") format("woff2");font-weight:400 900;font-style:normal;font-display:swap}
 @font-face{font-family:"IBM Plex Sans";src:url("fonts/ibm-plex-sans.woff2") format("woff2");font-weight:100 700;font-style:normal;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("fonts/ibm-plex-mono-400.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"IBM Plex Mono";src:url("fonts/ibm-plex-mono-500.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
@@ -64,7 +65,7 @@
   --env-top:#1A1C20;
   --light-ground:#ECEBE6;
 
-  --display:"Bricolage Grotesque","Archivo Black","Arial Black",sans-serif;
+  --display:"Zilla Slab",Georgia,"Times New Roman",serif;
   --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
   --mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
 
@@ -127,7 +128,7 @@ body.rm .grain{animation:none}
 .site-header.on-light::before{opacity:0}
 .site-header.solid{color:var(--ink);background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 1px 0 var(--line)}
 .site-header.solid::before{opacity:0}
-.brand{display:inline-flex;align-items:center;gap:10px;font:800 17px/1 var(--display);letter-spacing:-.01em;text-shadow:0 1px 14px rgba(0,0,0,.35);margin-right:auto;white-space:nowrap}
+.brand{display:inline-flex;align-items:center;gap:10px;font:800 17px/1 var(--display);letter-spacing:-.002em;text-shadow:0 1px 14px rgba(0,0,0,.35);margin-right:auto;white-space:nowrap}
 .on-light .brand,.solid .brand{text-shadow:none}
 /* The real monogram off their business card, keyed out of the black card ground so it is a white
    mark with a proper alpha channel. It is wider than it is tall, so it is sized by height and
@@ -167,7 +168,7 @@ body.rm .grain{animation:none}
 .menu{position:fixed;inset:0;z-index:45;background:var(--ground);padding:calc(var(--header-h) + 24px) var(--pad) 32px;display:flex;flex-direction:column;justify-content:space-between;transform:translateY(-4%);opacity:0;visibility:hidden;transition:opacity .3s var(--ease-out),transform .3s var(--ease-out),visibility 0s .3s}
 .menu.open{transform:none;opacity:1;visibility:visible;transition:opacity .3s var(--ease-out),transform .3s var(--ease-out),visibility 0s}
 .menu ol{display:grid;gap:4px}
-.menu li a{display:flex;align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);font:800 clamp(28px,8vw,40px)/1.05 var(--display);letter-spacing:-.02em}
+.menu li a{display:flex;align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);font:800 clamp(28px,8vw,40px)/1.05 var(--display);letter-spacing:-.006em}
 .menu li a .n{font:500 12px/1 var(--mono);color:var(--ink-2);letter-spacing:.08em;min-width:2.5ch}
 .menu .menu-foot{display:grid;gap:10px;font-size:15px;color:var(--ink-2)}
 .menu .menu-foot a{color:var(--ink)}
@@ -229,7 +230,7 @@ body.menu-open .site-header::before{opacity:0}
   z-index:2;pointer-events:none;
   display:flex;flex-direction:column;align-items:flex-start;
   padding:0 clamp(16px,3.2vw,48px);
-  font-family:"Bricolage Grotesque",system-ui,sans-serif;
+  font-family:"Zilla Slab",Georgia,serif;
   text-transform:uppercase;color:var(--ink);
   opacity:0;transition:opacity .9s ease-out;
 }
@@ -314,8 +315,8 @@ body.rm .film-word i{transform:none;transition:none}
 .beat{position:absolute;left:var(--pad);right:var(--pad);bottom:max(56px,9svh);opacity:0;color:#fff;text-shadow:var(--tshadow);will-change:opacity,transform}
 .beat::before{content:"";position:absolute;z-index:-1;inset:-60% -30% -60% -30%;background:radial-gradient(60% 60% at 40% 55%,rgba(8,8,6,.66),rgba(8,8,6,.38) 45%,transparent 78%)}
 .beat *{pointer-events:auto}
-.beat-line{font:800 clamp(26px,7.4vw,52px)/1.02 var(--display);letter-spacing:-.02em;max-width:16ch;text-wrap:balance}
-.beat h1{font:800 clamp(36px,10.5vw,84px)/.98 var(--display);letter-spacing:-.025em;max-width:11ch;text-wrap:balance}
+.beat-line{font:800 clamp(26px,7.4vw,52px)/1.02 var(--display);letter-spacing:-.006em;max-width:16ch;text-wrap:balance}
+.beat h1{font:800 clamp(36px,10.5vw,84px)/.98 var(--display);letter-spacing:-.008em;max-width:11ch;text-wrap:balance}
 .beat .lede{margin-top:14px;font-size:16px;max-width:36ch;text-wrap:pretty;color:#fff}
 .beat .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
 .beat .btn{text-shadow:none}
@@ -333,7 +334,7 @@ body.rm .film-word i{transform:none;transition:none}
   .quote-card .label{margin-bottom:14px}
   .quote-card .label::after{transform:none}
   .quote-card p{font-size:16.5px;line-height:1.5;color:var(--ink-2);margin-bottom:18px}
-  .quote-card .quote-phone{font:800 33px/1 var(--display);letter-spacing:-.02em;color:var(--ink);margin-bottom:20px}
+  .quote-card .quote-phone{font:800 33px/1 var(--display);letter-spacing:-.006em;color:var(--ink);margin-bottom:20px}
   .quote-card .quote-phone a:hover{color:var(--accent)}
   .quote-card .btn{width:100%}
   .quote-card .bracket-tl{top:-14px;left:-14px}
@@ -390,8 +391,8 @@ body.rm .film-word i{transform:none;transition:none}
 .rule::before,.rule::after{content:"";position:absolute;top:-6px;width:11px;height:11px;background:var(--accent);clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%)}
 .rule::before{left:-1px}.rule::after{right:-1px}
 
-h2{font:800 clamp(30px,8vw,46px)/1.02 var(--display);letter-spacing:-.025em;max-width:16ch;text-wrap:balance}
-h3{font:800 22px/1.15 var(--display);letter-spacing:-.01em}
+h2{font:800 clamp(30px,8vw,46px)/1.02 var(--display);letter-spacing:-.008em;max-width:16ch;text-wrap:balance}
+h3{font:800 22px/1.15 var(--display);letter-spacing:-.002em}
 .lede{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:48ch;text-wrap:pretty}
 .mask{display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .04em .12em;margin:0 -.04em -.12em}
 .mask > span{display:inline-block;transform:translateY(110%);transition:transform .9s var(--ease-out)}
@@ -431,7 +432,7 @@ h3{font:800 22px/1.15 var(--display);letter-spacing:-.01em}
 .svc-tiles span{
   position:absolute;left:18px;right:18px;bottom:15px;z-index:2;
   font:800 clamp(25px,3vw,36px)/1 var(--display);
-  letter-spacing:-.02em;text-transform:uppercase;color:#fff;
+  letter-spacing:-.006em;text-transform:uppercase;color:#fff;
 }
 .svc-tiles span::after{
   content:"";display:block;width:42px;height:3px;margin-top:11px;background:var(--accent);
@@ -483,7 +484,11 @@ body.rm .svc-tiles span::after{transform:scaleX(1) !important}
   /* the list, the caption and the button stack down the second column against the top of the
      picture, rather than being centred in it, which left a band of empty ground under each */
   .section .wrap .builder .builder-steps{grid-column:2;grid-row:1;align-self:start;display:grid;gap:2px}
-  .section .wrap .builder .builder-steps li{padding:11px 0}
+  /* This dropped the left padding to zero for the single-column list, but the marker diamond is
+     still positioned at left:0 from the base rule below, so with no gutter left to clear it sat
+     on top of the first letter of every label. Keeping the 20px gutter from the base rule fixes
+     that without moving the marker itself. */
+  .section .wrap .builder .builder-steps li{padding:11px 0 11px 20px}
   .section .wrap .builder .builder-note{grid-column:2;grid-row:1;align-self:end;margin:0 0 8px}
   .section .wrap .builder .builder-go{grid-column:2;grid-row:2;justify-self:start;align-self:start;margin-top:0}
 }
@@ -505,7 +510,7 @@ body.rm .svc-tiles span::after{transform:scaleX(1) !important}
 .svc-detail > li{background:var(--ground);padding:24px 22px 26px;transition:background-color .35s var(--ease-out)}
 .svc-detail > li:hover{background:var(--ground-2)}
 .svc-detail h3{
-  font:800 20px/1.15 var(--display);letter-spacing:-.012em;color:var(--ink);
+  font:800 20px/1.15 var(--display);letter-spacing:-.003em;color:var(--ink);
   padding-bottom:12px;margin-bottom:13px;position:relative;
 }
 .svc-detail h3::after{
@@ -550,7 +555,7 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .steps{display:grid;gap:0;margin-top:34px;counter-reset:step}
 .steps li{position:relative;display:grid;grid-template-columns:44px 1fr;gap:14px;padding:22px 0;border-top:1px dashed var(--line)}
 .steps li:last-child{border-bottom:1px dashed var(--line)}
-.steps .n{font:800 34px/1 var(--display);color:var(--ink);letter-spacing:-.03em}
+.steps .n{font:800 34px/1 var(--display);color:var(--ink);letter-spacing:-.002em}
 .steps .n::before{content:"";display:block;width:10px;height:10px;margin-bottom:8px;background:var(--accent);clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%)}
 .steps h3{margin-bottom:6px}
 .steps p{color:var(--ink-2);max-width:42ch;text-wrap:pretty}
@@ -566,7 +571,7 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .review{padding:22px 20px;background:var(--ground-3);border:1px solid var(--line);border-radius:2px;display:grid;gap:14px;transition:border-color .25s,transform .25s var(--ease-out)}
 .review:hover{border-color:var(--line-strong);transform:translateY(-2px)}
 .review blockquote{margin:0;font:500 18px/1.4 var(--body);letter-spacing:-.005em;text-wrap:pretty}
-.review.short blockquote{font:800 26px/1.1 var(--display);letter-spacing:-.02em}
+.review.short blockquote{font:800 26px/1.1 var(--display);letter-spacing:-.006em}
 .review footer{display:flex;justify-content:space-between;gap:12px;align-items:baseline;font:500 12px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
 .review footer b{color:var(--ink);font-weight:500}
 .reviews-cta{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
@@ -598,7 +603,7 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .hours tr.today td,.hours tr.today th{color:var(--ink);font-weight:600}
 .hours td.closed{color:var(--ink-2)}
 .address{display:grid;gap:12px;font-size:17px}
-.address .big{font:800 clamp(24px,6vw,32px)/1.1 var(--display);letter-spacing:-.02em}
+.address .big{font:800 clamp(24px,6vw,32px)/1.1 var(--display);letter-spacing:-.006em}
 .address a{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line-strong)}
 .address a:hover{text-decoration-color:var(--accent)}
 .map{margin-top:8px;aspect-ratio:16/10;border:1px solid var(--line);border-radius:2px;background:var(--ground-3);overflow:hidden}
@@ -622,7 +627,7 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
 .form-status[data-state="bad"]{color:var(--error)}
 .form-note{font:400 12.5px/1.5 var(--mono);color:var(--ink-2);letter-spacing:.02em}
 .contact-side{display:grid;gap:18px;align-content:start}
-.contact-side .big{font:800 clamp(26px,7vw,40px)/1 var(--display);letter-spacing:-.02em}
+.contact-side .big{font:800 clamp(26px,7vw,40px)/1 var(--display);letter-spacing:-.006em}
 .contact-side .big a:hover{color:var(--accent-deep)}
 
 /* Footer */
@@ -807,7 +812,7 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
 .builder-stage::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(to top,rgba(10,10,8,.72),rgba(10,10,8,0) 42%)}
 .builder-label{position:absolute;left:16px;bottom:14px;z-index:2;margin:0;
-  font:800 clamp(20px,4.4vw,30px)/1.05 var(--display);letter-spacing:-.02em;color:#fff;
+  font:800 clamp(20px,4.4vw,30px)/1.05 var(--display);letter-spacing:-.006em;color:#fff;
   text-shadow:0 1px 2px rgba(8,8,6,.9),0 3px 14px rgba(8,8,6,.7)}
 .builder-count{position:absolute;right:16px;top:14px;z-index:2;
   font:500 11.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#fff;
@@ -923,7 +928,7 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
   font-weight:700;
   font-size:clamp(32px,8.6vw,54px);
   line-height:1.08;
-  letter-spacing:-.02em;
+  letter-spacing:-.006em;
 }
 .film-stage .beat-hero .row{margin-top:26px}
 @media (min-width:768px){
@@ -1116,7 +1121,7 @@ body{padding-bottom:0}
    columns and one column, ten reviews divide evenly and nothing needs to change. */
 @media (min-width:1100px){
   .reviews li:last-child{grid-column:1 / -1;justify-items:center;text-align:center;padding:32px 48px}
-  .reviews li:last-child blockquote{font:800 clamp(22px,2.6vw,28px)/1.35 var(--display);letter-spacing:-.015em;max-width:56ch}
+  .reviews li:last-child blockquote{font:800 clamp(22px,2.6vw,28px)/1.35 var(--display);letter-spacing:-.004em;max-width:56ch}
   .reviews li:last-child footer{justify-content:center;gap:18px}
 }
 
@@ -1333,7 +1338,7 @@ body.rm .env-veil{display:block}
   }
   #revTrack li.review.short:last-child blockquote{
     font:800 26px/1.1 var(--display);
-    letter-spacing:-.02em;
+    letter-spacing:-.006em;
   }
   #revTrack li.review:last-child footer{
     justify-content:space-between;
@@ -3269,3 +3274,64 @@ body.rm .film-stage .beat-static .row{
 .section.panel::before{
   content:none;
 }
+
+/* ================================================================ the job picker's step list
+   At the two column desktop layout the list is placed in the right hand
+   column at `grid-column:2;align-self:start`, with the note pinned to
+   `align-self:end` under it. That arrangement only makes sense if the list
+   is a vertical stack, and the rule that placed it there set `display:grid`
+   without a template, so the eight column template from the 768px query
+   survived underneath it. Six items were being squeezed into eight columns
+   of a half width column, about 72px each: long enough for "Flooring" and
+   not for "Back deck", which wrapped, and it left a large hole between the
+   list and the note that the stack was supposed to fill.
+
+   One column, which is what the placement already assumed. The rule above
+   each item now runs the full width of the column, so the hairline, the
+   marker and the word finally share a left edge instead of each item
+   carrying a stub of rule its own cell wide. */
+@media (min-width:900px){
+  .section .wrap .builder .builder-steps{
+    grid-template-columns:1fr;
+    gap:0;
+  }
+}
+
+/* Pinning the note to `align-self:end` of the same grid row as the list was
+   the other half of the same mistake. It only reads as a stack while the
+   list is short enough to leave a gap under it, and a single column list of
+   six is not: the note landed on top of the last item. The right hand
+   column becomes a real stack instead, one row each, which is what the
+   comment above it always claimed it was. */
+@media (min-width:900px){
+  .section .wrap .builder .builder-note{
+    grid-column:2;grid-row:2;align-self:start;margin:18px 0 0;
+  }
+  .section .wrap .builder .builder-go{
+    grid-column:2;grid-row:3;justify-self:start;align-self:start;margin-top:18px;
+  }
+}
+
+/* ================================================================ the display face
+   Bricolage Grotesque is out, Zilla Slab is in, declared once at the top of
+   this file. The reason for a slab rather than another grotesque is the
+   mark: the logo is a serif RR monogram between two rules inside a rounded
+   frame, and a slab is the only one of the options that picks that up
+   instead of ignoring it. It also has the thickest, most even strokes of
+   the three, which is what this site actually needs, because every piece of
+   display type here sits over moving film footage.
+
+   Zilla Slab ships as statics, not a variable font, and only the 700 is
+   self-hosted. The @font-face deliberately claims the whole 400 to 900
+   range so the two weights this site asks for, 600 on the hero headline and
+   800 everywhere else, both resolve to that one file rather than being
+   synthetically emboldened, which is what would happen if the declared
+   weight were a single value. A slab carries more ink than a grotesque, so
+   700 here reads about as heavy as the 800 it replaces.
+
+   Every display rule's letter-spacing was eased at the same time. Tracking
+   of -.02 to -.03em was tuned for a grotesque; on a slab the serifs are
+   already closing the gaps, and the same numbers jammed the letterforms
+   into each other. They now run between 0 and -.01em. Anything added here
+   later should follow that, not the old numbers.
+   ---------------------------------------------------------------------- */
