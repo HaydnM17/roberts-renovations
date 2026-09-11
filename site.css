@@ -3287,7 +3287,7 @@ body.rm .film-stage .beat-static .row{
   border:0;
   border-radius:0;
   overflow:visible;
-  perspective:1100px;
+  perspective:950px;
   perspective-origin:50% 40%;
 }
 @media (min-width:680px){.svc-detail{gap:14px}}

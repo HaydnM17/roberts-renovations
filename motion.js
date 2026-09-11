@@ -253,8 +253,8 @@
      keeps the live set, and nothing is written at all when the numbers have not moved enough to
      see, because every write here is a style recalculation on a compositing layer that is
      already expensive. */
-  var TILT_MAX = 5.5;        /* degrees at the corner of a tile under the pointer */
-  var SCROLL_TILT = 1.6;     /* degrees between the bottom of the frame and the middle */
+  var TILT_MAX = 9;          /* degrees at the corner of a tile under the pointer */
+  var SCROLL_TILT = 2.6;     /* degrees between the bottom of the frame and the middle */
   var tiles = [], liveTiles = [], tileRaf = null;
 
   function writeTile(t, tiltX, tiltY, scrollTilt, glossX, glossY, gloss) {
