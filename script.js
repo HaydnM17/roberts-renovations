@@ -164,17 +164,36 @@
     var docH = Math.max(doc.documentElement.scrollHeight, win.innerHeight + 1);
     return Math.max(1, docH - win.innerHeight * 1.7);
   }
-  /* Eased, not linear. Linear meant a quarter of the page spent a quarter of the build, and the
-     complaint was that the house was going up too fast to watch. Raising the input to a power
-     holds the early part back: a quarter of the way down now spends about a ninth of the film, so
-     the dig and the foundation take real scrolling, and the later stages, which read faster
-     anyway because more is changing per frame, catch up. It still finishes exactly at the
-     changeover, so nothing is lost, it is just distributed the way the eye wants it. */
-  var SCRUB_EASE = 1.7;
+  /* Two segments, not one power curve, because the two complaints about this
+     film pull in opposite directions and a single exponent cannot serve both.
+
+     The first was that the house went up too fast to watch, which a linear
+     scrub caused. The answer then was Math.pow(raw, 1.7), which holds the
+     early film back. The second is that the digging takes far too long to
+     get through. Both are true, and they are about different halves of the
+     same clip: the dig is three stages of a hole in the ground, and the
+     build is five stages where something new appears every few frames. One
+     exponent either rushes the build or drags the dig, and 1.7 dragged the
+     dig badly: framing did not start until 57% of the way down the page.
+
+     So the film is cut where it stops being a hole and starts being a
+     house, and each side gets its own share of the scrolling. The dig runs
+     fast through a small slice of the page; everything from framing on gets
+     all the rest, which is MORE room than it had before, not less. Framing
+     now starts at 15% instead of 57%.
+
+     DIG_END is a film position, DIG_SCROLL is a page position. They are not
+     the same kind of number and swapping them silently ruins the pacing. */
+  var DIG_END = 3 / STAGES;   /* end of "Foundation", where framing begins */
+  var DIG_SCROLL = 0.15;      /* the share of the page the dig is allowed */
+  function curve(raw) {
+    if (raw <= DIG_SCROLL) return DIG_END * (raw / DIG_SCROLL);
+    return DIG_END + (1 - DIG_END) * ((raw - DIG_SCROLL) / (1 - DIG_SCROLL));
+  }
   function progress() {
     if (FORCE_P !== null) return FORCE_P;
     var raw = clamp(scrollPos() / scrubEnd(), 0, 1);
-    return introBase + (1 - introBase) * Math.pow(raw, SCRUB_EASE);
+    return introBase + (1 - introBase) * curve(raw);
   }
 
   /* The captions run off raw scroll, not off the film's position. The two used to be the same
@@ -389,7 +408,26 @@
       var rising = p < b.peak;
       b.op = e;
       b.el.style.opacity = e.toFixed(3);
-      b.el.style.transform = "translate3d(0," + ((1 - e) * (rising ? 16 : -12)).toFixed(1) + "px,0)";
+      /* Coming in, a short 16px lift: the line should arrive, not fly in.
+         Going out, a service line travels the height of the screen so it
+         leaves over the top edge instead of nudging up 12px and blinking
+         off where it stood. The stage clips at the top, so the caption is
+         cut off by the top of the window, which is the whole effect.
+
+         0.86 rather than a full screen because the line starts at
+         bottom:10svh and has its own height: a full screen would park it
+         above the edge with fade still left to run, and the last of the
+         movement would happen where nobody can see it. It is still at
+         roughly a tenth opacity three quarters of the way up, which is what
+         makes it read as flying off rather than dissolving.
+
+         .beat-final keeps the old small offset. It is the film's closing
+         panel, with a heading, buttons and a quote card in it, and a whole
+         screen of travel on a block that size reads as the page falling
+         apart rather than a caption leaving. b.rule is only true on the
+         service lines, which is exactly the set that wants this. */
+      var outBy = b.rule ? -(win.innerHeight * 0.86) : -12;
+      b.el.style.transform = "translate3d(0," + ((1 - e) * (rising ? 16 : outBy)).toFixed(1) + "px,0)";
       b.el.style.visibility = e > 0.004 ? "visible" : "hidden";
       b.el.style.pointerEvents = e > 0.6 ? "auto" : "none";
       /* The accent rule under a service line draws itself once the line is

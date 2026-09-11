@@ -63,7 +63,6 @@
   --error:#FF6B5A;
   --seam:#151513;            /* overwritten by JS with the film's sampled final colour */
   --env-top:#1A1C20;
-  --light-ground:#ECEBE6;
 
   --display:"Zilla Slab",Georgia,"Times New Roman",serif;
   --body:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
@@ -225,42 +224,6 @@ body.menu-open .site-header::before{opacity:0}
    up, which is the point of the film. Both layers are decoration and carry no text to a reader.
    The canvas is capped to the top half of the frame so the lawn can never swallow the wordmark;
    occlude.js feathers that lower edge so the cap is not a visible horizontal cut. */
-.film-word{
-  position:absolute;left:0;right:0;top:11%;
-  z-index:2;pointer-events:none;
-  display:flex;flex-direction:column;align-items:flex-start;
-  padding:0 clamp(16px,3.2vw,48px);
-  font-family:"Zilla Slab",Georgia,serif;
-  text-transform:uppercase;color:var(--ink);
-  opacity:0;transition:opacity .9s ease-out;
-}
-.film.live .film-word,.film.static .film-word{opacity:1}
-/* Each line rises out from behind its own edge rather than fading in. The span is the mask and
-   the i is the thing that moves. The padding and the matching negative margin give the mask a
-   little room at the bottom, because the line-height here is under 1 and caps would otherwise
-   clip against the mask edge. Both lines are decoration and aria-hidden, so nothing about this
-   reaches a reader. */
-.film-word span{display:block;overflow:hidden;padding-bottom:.07em;margin-bottom:-.07em}
-.film-word i{
-  display:block;font-style:normal;
-  transform:translateY(108%);
-  transition:transform 1.05s var(--ease-out);
-}
-.film.live .film-word i,.film.static .film-word i{transform:none}
-.film-word .fw-2 i{transition-delay:.1s}
-body.rm .film-word i{transform:none;transition:none}
-.film-word .fw-1{
-  font-weight:500;font-size:clamp(14px,1.5vw,20px);
-  letter-spacing:.46em;text-indent:.46em;
-  line-height:1;margin-bottom:.9em;color:#fff;
-}
-/* 11 characters of this face measure 5.95x the font size, so 16.4vw fills the width edge to
-   edge. The padding above is subtracted from the multiplier rather than the width. */
-.film-word .fw-2{
-  font-weight:800;font-size:min(15.2vw,196px);
-  letter-spacing:-.028em;line-height:.86;
-  white-space:nowrap;
-}
 /* object-fit matches the video's own cover crop exactly. A canvas carrying width and height
    attributes has an intrinsic size, so object-fit applies to it the same way it does to the
    video, and the two stay registered at every viewport without any measuring in script. */
@@ -271,9 +234,6 @@ body.rm .film-word i{transform:none;transition:none}
   opacity:0;transition:opacity .5s ease-out;
 }
 .film.live .film-fg.armed{opacity:1}
-/* with the effect off the name simply sits on the film, which is a normal hero, so nothing here
-   is load bearing. Keep the letters legible in that case. */
-.film-word{text-shadow:0 2px 30px rgba(8,8,10,.34)}
 
 /* The scrim sits UNDER the wordmark, because its job now includes giving white letters something
    to sit on. This footage is an overcast sky and type on it has nothing to hold otherwise. Both
@@ -352,25 +312,14 @@ body.rm .film-word i{transform:none;transition:none}
 /* ---------- Sections ---------- */
 .wrap{width:min(100% - var(--pad) * 2,var(--max));margin-inline:auto}
 .section{position:relative;padding:72px 0}
-/* The section number set enormous and almost invisible behind its own content. It is the same
-   figure the label already shows, so it adds no information and is decoration only, which is why
-   it comes from a data attribute and never from the document. Kept under 3% ink so it reads as a
-   watermark in the surface rather than as type competing with the heading. */
-.section::before{
-  content:attr(data-n);
-  position:absolute;right:2vw;top:-.14em;
-  z-index:0;pointer-events:none;
-  font:800 clamp(150px,21vw,320px)/.8 var(--display);
-  letter-spacing:-.05em;
-  color:var(--ink);opacity:.028;
-}
-.section.light::before{color:var(--ground);opacity:.05}
-.section.panel::before{opacity:.035}
+/* The giant per-section watermark numeral that used to live here (content:attr(data-n), plus its
+   .light/.panel variants and phone override) is switched off for good, see the "section
+   watermarks" note near the bottom of this file: content:none there beats content:attr(data-n)
+   here regardless of order, so this rule never painted anything and is gone rather than kept
+   as inert weight. The selector itself is untouched below: the pointer-parallax rules and the
+   content:none override both still need .section::before to exist. */
 /* everything real sits above it */
 .section > .wrap{position:relative;z-index:1}
-@media (max-width:767px){
-  .section::before{font-size:34vw;right:-.04em;opacity:.035}
-}
 .section .wrap > *,.section .split > *,.section .split-content > *{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease-out),transform .8s var(--ease-out)}
 .section.in .wrap > *,.section.in .split > *,.section.in .split-content > *{opacity:1;transform:none}
 .section.in .wrap > :nth-child(2),.section.in .split > :nth-child(2),.section.in .split-content > :nth-child(2){transition-delay:.08s}
@@ -550,16 +499,6 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
    again, extend the one in extras.css rather than adding a second pseudo-element. */
 [data-spot]{position:relative}
 
-/* Process, the one light section */
-.light{--ground:var(--light-ground);--ground-2:#F7F6F2;--ground-3:#DFDED7;--ink:#15140F;--ink-2:#4E4C45;--line:#B9B7AE;--line-strong:#6E6C64;background:var(--ground);color:var(--ink)}
-.steps{display:grid;gap:0;margin-top:34px;counter-reset:step}
-.steps li{position:relative;display:grid;grid-template-columns:44px 1fr;gap:14px;padding:22px 0;border-top:1px dashed var(--line)}
-.steps li:last-child{border-bottom:1px dashed var(--line)}
-.steps .n{font:800 34px/1 var(--display);color:var(--ink);letter-spacing:-.002em}
-.steps .n::before{content:"";display:block;width:10px;height:10px;margin-bottom:8px;background:var(--accent);clip-path:polygon(40% 0,60% 0,60% 40%,100% 40%,100% 60%,60% 60%,60% 100%,40% 100%,40% 60%,0 60%,0 40%,40% 40%)}
-.steps h3{margin-bottom:6px}
-.steps p{color:var(--ink-2);max-width:42ch;text-wrap:pretty}
-
 /* Reviews, the ground-2 panel */
 .panel{position:relative;background:var(--ground-2)}
 .panel::before,.panel::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:100vw;height:2px;background:var(--accent)}
@@ -680,9 +619,6 @@ body.rm .svc-detail > li,body.rm .svc-detail h3::after{transition:none}
   .services li .tag{display:block;white-space:nowrap;text-align:right}
   .work-grid{grid-template-columns:repeat(4,1fr);gap:14px}
   .work-grid figure.wide{grid-column:span 2;aspect-ratio:4/3}
-  .steps{grid-template-columns:repeat(2,1fr);column-gap:48px}
-  .steps li{grid-template-columns:56px 1fr;padding:28px 0}
-  .steps .n{font-size:44px}
   .reviews{grid-template-columns:repeat(2,1fr);gap:14px}
   .hours-grid{grid-template-columns:1fr 1fr;gap:48px}
   .contact-grid{grid-template-columns:1.1fr .9fr;gap:56px}
@@ -731,16 +667,7 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
     object-fit:cover;object-position:50% 50%;
   }
   /* the name rides the band, not the stage, and both it and the canvas clear the edge fade */
-  .film-word{
-    top:calc(11svh + 7vw);
-    padding:0 16px;
-    z-index:3;
-  }
   .film-fg{z-index:4}
-  .film-word .fw-1{font-size:13px;letter-spacing:.34em;text-indent:.34em;margin-bottom:.5em}
-  /* this face at weight 800 measures 6.33px of width per px of size for these eleven letters, so
-     13.6vw plus the 16px padding either side is the widest that still clears a 390 wide screen */
-  .film-word .fw-2{font-size:13.6vw}
   /* soften both edges of the band into the ground so it is not a cut-out rectangle */
   .film-stage::after{
     content:"";position:absolute;left:0;right:0;top:11svh;height:calc(164vw * 9 / 16);
@@ -1048,15 +975,6 @@ body.paused *,body.paused *::before,body.paused *::after{animation-play-state:pa
 
 /* ---------------------------------------------------------------- fixes from the review pass */
 
-/* The gold accent is made for the dark ground. On the one pale section it drops to 1.6:1, so the
-   marks there use the ink colour instead and the section keeps its own accent for anything active. */
-.section.light{--accent:#8A6A00;--accent-soft:rgba(138,106,0,.14)}
-/* Bug from an earlier pass: this rule painted the label's own number ("04") in the ink colour on
-   an ink-coloured background, so it rendered as a solid dark chip with the digits invisible
-   inside it, right in the middle of the label row. Colour only; no background on real text. */
-.section.light .label .n{color:var(--ink)}
-.section.light .steps .n::before{background:#8A6A00}
-
 /* Form fields were overriding the site's 3px accent focus ring with a much weaker one. */
 .field input:focus-visible,
 .field textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-color:var(--accent)}
@@ -1188,23 +1106,6 @@ body.rm .call-bar{transition:none}
                               reverses the same transition. .film-ready never implies .film-on
                               on its own, so the video cannot show before it has a frame ready. */
 
-.env-film{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:50% 50%;
-  opacity:0;
-  /* Modest, not zero: a full-viewport blurred video that keeps decoding new frames is the
-     expensive case the brief calls out. 2px is enough to read as soft atmosphere instead of
-     footage; saturate(.35) pulls it most of the way to the panel/ink palette instead of
-     competing with it. Both are static values, not animated, so they cost one rasterisation
-     per video frame, not per transition tick. */
-  filter:blur(2px) saturate(.35);
-  transition:opacity .9s var(--ease-out);
-  pointer-events:none;
-}
 /* .env already carries pointer-events:none and this is an inherited property, so nothing here
    would ever intercept a click either way; stated again on both children only so this file is
    self-contained if .env's own rule ever moves. */
@@ -1231,17 +1132,12 @@ body.rm .call-bar{transition:none}
      inaudible to the visitor: .env is fixed behind the hero's own opaque stage, so .film-ready
      always arrives while .env is still fully hidden. */
 }
-.env.film-ready .env-veil{opacity:1}
-.env.film-ready.film-on .env-film{opacity:.62}
 
 /* Phone: denser type, smaller screen, less room for a bright patch of frame to sit behind a
    line of text before it starts working against it. Same colour, stronger alpha, which puts the
    film at (1 - .8) x .62 = 12.4% there. */
 @media (max-width:767px){
   .env-veil{background:color-mix(in srgb,var(--ground) 80%,transparent)}
-  /* a fixed, blurred, full-viewport video is the expensive case on a phone. Half the blur costs
-     half the rasterisation area per frame and is not tellable apart at this opacity. */
-  .env-film{filter:blur(1px) saturate(.35)}
 }
 
 /* Reduced motion hides the film outright and leaves the plain gradient, exactly as if
@@ -1983,113 +1879,6 @@ body.rm .site-header .nav,body.rm .site-header .btn-quote{transition:none}
 
 
 /* ================================================================
-   film-phone.css
-   ================================================================ */
-/* Roberts Renovations, phone film fix (agent FP).
-   Owns this file only. Linked LAST, after styles.css, extras.css, ambient.css,
-   reviews-slider.css, motion.css and mobile.css, so every rule here wins by cascade order.
-   Read but never wrote: index.html, styles.css, extras.css, mobile.css, script.js, occlude.js.
-
-   ---- the problem, and what was ruled out ----------------------------------------------------
-   The client's complaint, in his words: on a phone the film reads as "just a hero background
-   video" sitting "in the top half of the site", with "all black under it". He is right, and the
-   fix is not object-fit:cover on the full 100svh stage. Checked with real frames pulled from
-   assets/hero-film.mp4 (ffmpeg, see docs/AGENT-PHONE-LOG.md): cover-cropping the 16:9 film into a
-   390x844 portrait box keeps only the centre ~26% of every frame's width, which slices the whole
-   left side of the house and the front door clean off. Screenshot of that crop is in the log.
-   The band that already exists (styles.css, the "film on a phone" comment) avoids that by sizing
-   a 16:9 box (same aspect as the source, so object-fit:cover inside it crops nothing) at 164% of
-   the viewport width, and letting the stage's own overflow:hidden trim the sides instead. Measured
-   the actual visible window that produces against the house's real extent in the footage: the
-   house is not merely inside it, it is within about 20px of the RIGHT edge of it already. There
-   is no slack left to make that band wider (or taller, since width and height are locked together
-   at 16:9) without starting to cut the house. So the sharp band's own size and crop are correct
-   and untouched here.
-
-   ---- what actually is the problem, and the fix ----------------------------------------------
-   The band only fills ~43% of the screen's height. Above it (11svh) and below it (everything down
-   to the next section, where the caption sits) is flat --ground with nothing in it, which is
-   exactly what reads as "just a strip of video on a black page". The fix here is the letterbox
-   fill every video app uses for this: a blurred, heavily darkened copy of the film's own imagery
-   filling the WHOLE stage behind the sharp band, so the eye reads one continuous, textured scene
-   rather than a bright rectangle floating on nothing. Never a second <video>: that would double
-   decode load on a phone that already decodes hero-film.mp4 (and, a screen later, orbit.mp4). This
-   is a single static <img>'s worth of cost, and on the live/building state it is not even that:
-   assets/film-first.jpg is the same file already sitting in the DOM as .film-poster's own src
-   (index.html), so the browser has already fetched it by the time this paints. Nothing new is
-   downloaded for that state. Only the reduced-motion/still state (below) pulls a second file, and
-   it does that because script.js already pulls that exact file for the sharp poster at that point
-   anyway, so again nothing new.
-
-   Known, accepted cost: this backdrop is a still frame, not the live video. During a normal scroll
-   the sharp band builds from an empty lot to a finished house; this backdrop stays on film-first's
-   empty lot the whole time. It is blurred past the point of being a recognisable scene (see the
-   contrast workings below, which assume the worst realistic pixel in the whole file, not just this
-   one frame) so it reads as tone and light rather than a specific mismatched moment, but it is a
-   real trade-off and is called out here rather than hidden. Could not verify how it reads against
-   the live video itself, only against the poster frames headless capture can show; see the log. */
-
-@media (max-width:767px){
-
-  /* One pseudo-element, three jobs: the blurred/darkened copy of the frame, the veil that makes
-     the darkening predictable rather than "trust the blur", and the mask that fades it to nothing
-     at the very top and bottom edges of the stage so it is a soft field, not a filled rectangle
-     with its own hard edge. Sits behind film-poster/film-video/film-fg (both are position:absolute
-     with no z-index, so as the first thing painted for .film-stage they paint under them by source
-     order alone; .film-stage::after, at z-index:2 in styles.css, and everything above it, stay
-     above this too since explicit z-index always beats the auto/0 bucket this sits in). Does not
-     touch film-poster/film-video/film-fg or their shared rule in styles.css at all: they are not
-     read here, let alone written. */
-  .film-stage::before{
-    content:"";
-    position:absolute;inset:0;z-index:0;
-    pointer-events:none;
-    background-repeat:no-repeat;
-    background-size:cover;
-    background-position:50% 50%;
-    /* The gradient is the veil, listed first so it paints on top of the photo beneath it, same
-       stack order as index.html's own listing convention (decoration first, content of it after).
-       84% ground is not a guess: worked from the single brightest pixel actually measured in
-       film-first.jpg (255,255,255, a blown highlight in the overcast sky, brighter even than the
-       240 the desktop orbit-veil's own comment assumes for its footage) forward to a floor, not
-       backward from a look. See the log for the full table; at this alpha even that pixel, veiled,
-       still clears --ink-2 on it at 5.76:1 against the 4.5:1 floor. The averaged frame, which is
-       what a viewer actually sees once this is blurred, sits far under that, nowhere near the
-       floor. */
-    background-image:
-      linear-gradient(color-mix(in srgb,var(--ground) 84%,transparent),
-                       color-mix(in srgb,var(--ground) 84%,transparent)),
-      url(assets/film-first.jpg);
-    /* Blur this hard: the point is a soft field of tone and light, not a recognisable second copy
-       of the photo. saturate pulls it further toward the ground/ink palette instead of competing
-       with it, the same move ambient.css already makes for the orbit film for the same reason. */
-    filter:blur(34px) saturate(.4);
-    -webkit-mask-image:linear-gradient(to bottom,
-      transparent 0,rgba(0,0,0,.8) 9%,#000 18%,
-      #000 88%,rgba(0,0,0,.7) 96%,transparent 100%);
-    mask-image:linear-gradient(to bottom,
-      transparent 0,rgba(0,0,0,.8) 9%,#000 18%,
-      #000 88%,rgba(0,0,0,.7) 96%,transparent 100%);
-  }
-  /* film.static is the reduced-motion/?still=1/frame-load-failed path (script.js's goStatic()):
-     no video ever plays, poster.src is swapped to poster-d.jpg (the finished house) and stays
-     there. Swapping this backdrop to the same file means the still hero pairs a blurred copy of
-     the exact frame the visitor is looking at, rather than the live state's necessary mismatch.
-     Costs nothing extra: goStatic() already requests poster-d.jpg for the sharp <img> the instant
-     this class lands, for the same reason. */
-  .film.static .film-stage::before{
-    background-image:
-      linear-gradient(color-mix(in srgb,var(--ground) 84%,transparent),
-                       color-mix(in srgb,var(--ground) 84%,transparent)),
-      url(assets/poster-d.jpg);
-  }
-
-  /* No motion is added by this file: the backdrop is a plain background-image, never transitioned
-     or animated, so there is nothing here that prefers-reduced-motion or body.rm need to stop. */
-}
-
-
-/* ================================================================
    hero-type.css
    ================================================================ */
 /* ===================================================================
@@ -2406,14 +2195,6 @@ body.rm .film-crest,body.rm .film-crest-mark{transition:none;transform:none;opac
 .env .film-scrim,
 .env .film-vignette{position:absolute;inset:0;pointer-events:none}
 
-/* The changeover. Both videos live in the same layer, so the handover is one fading out as the
-   other fades in rather than anything being moved or reloaded. .env.film-on is set by script.js
-   when the switch divider comes up the screen. */
-.env .film-video,.env .film-poster{transition:opacity .9s var(--ease-out)}
-.env.film-on .film-video,
-.env.film-on .film-poster,
-.env.film-on .film-scrim,
-.env.film-on .film-vignette{opacity:0}
 body.rm .env .film-video,body.rm .env .film-poster{transition:none}
 
 /* The hero section is now a window onto that layer rather than a thing with its own picture in
@@ -2485,11 +2266,6 @@ body.rm .film-crest,body.rm .beat-hero{transform:none;opacity:1}
 @media (prefers-reduced-motion:reduce){
   .film-crest,.beat-hero{transform:none;opacity:1}
 }
-
-/* The changeover carries no visuals now. The client asked for the divider to go: "I don't even
-   need that divider anymore, it seems to flow into the other background pretty well." It stays in
-   the markup as the marker the crossfade and the scrub range are measured against. */
-.switch{display:block;height:0;margin:0;padding:0;border:0}
 
 /* ---------------------------------------------------------------- the scrim is a hero treatment
    It exists to push the film back behind the crest and give the hero captions something to sit
@@ -2712,14 +2488,6 @@ body.rm .film-scrim{opacity:1}
 .film-video,.film-poster{
   filter:saturate(.72) contrast(1.02) brightness(calc(0.92 - var(--veil,0) * 0.23));
 }
-.env-film{
-  filter:blur(2px) saturate(.35) brightness(calc(1 - var(--veil,0) * 0.25));
-}
-@media (max-width:767px){
-  .env-film{
-    filter:blur(1px) saturate(.35) brightness(calc(1 - var(--veil,0) * 0.25));
-  }
-}
 
 /* ---------------------------------------------------------------- 4. Reviews' own opaque fill
    Same treatment as .landing, same reason: this was a second, independent grey rectangle, not the
@@ -2727,10 +2495,6 @@ body.rm .film-scrim{opacity:1}
    so nothing inside them loses contrast; this only affects the loose heading/label/lede that sat
    directly on the panel before. */
 .panel{background:none}
-
-/* ---------------------------------------------------------------- 5. the divider, gone entirely
-   Per the client's separate, explicit instruction. Not restyled, not lightened: removed. */
-.switch{display:none}
 
 /* ---------------------------------------------------------------- per-element reinforcement
    The site already has a token for exactly this job: --tshadow, used today only on the hero
@@ -3373,3 +3137,45 @@ body.rm .film-stage .beat-static .row{
    collapses it to 100svh when the film fails to load, which is always the
    case from a local file. That is what made the first attempt at this fix
    miss by three screens. */
+
+/* ================================================================ four fixes from the audits
+   1. The past work photos had NO visible keyboard focus ring at all. The
+      ring is drawn on the button, the button fills the figure exactly, and
+      the figure carries overflow:hidden to crop the photo to its corners,
+      so an outline drawn OUTSIDE the button's box was outside the figure's
+      box too and was clipped away entirely. The only thing left on focus
+      was a 3% zoom, which is not a focus indicator. A negative offset draws
+      the ring inward, inside the box that does the clipping, so it
+      survives. Do not "tidy" this back to a positive offset.
+
+   2. .car-btn is 42x42 and is the one control the touch target pass missed,
+      which matters because it is shared by BOTH carousels and is the main
+      way anyone drives them on a phone. 44 is the floor.
+
+   3. The desktop hero headline still carried -.025em, tracking tuned for
+      the grotesque that is no longer here. The swap pass matched on rules
+      naming var(--display) and this one inherits the family instead, so it
+      was missed. It is the largest type on the site.
+
+   4. The header wordmark ran under the nav pill at around 900px. .brand is
+      a flex item with white-space:nowrap, so when the pill and the brand
+      cannot both fit, the brand's BOX shrinks while its text keeps its
+      width and paints straight through the pill. It rendered as "Roberts
+      Renovatio". flex-shrink:0 stops the box lying about its size, and
+      between 900 and 1080 the word is dropped so only the monogram sits
+      beside the pill. The anchor keeps its aria-label, so nothing is lost
+      to a screen reader.
+   ---------------------------------------------------------------------- */
+.work-grid button:focus-visible,
+.work-grid.car-track > figure.car-cell button:focus-visible{
+  outline:3px solid var(--accent);
+  outline-offset:-3px;
+}
+.car-btn{width:44px;height:44px}
+@media (min-width:768px){
+  .film-stage .beat h1{letter-spacing:-.008em}
+}
+.brand{flex-shrink:0}
+@media (min-width:900px) and (max-width:1080px){
+  .brand span{display:none}
+}
