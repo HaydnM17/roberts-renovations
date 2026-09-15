@@ -134,7 +134,7 @@
      and trim) are both named in the services section immediately below.
      If a line is ever added here, this number cannot simply grow to make
      room for it. */
-  var SVC_SPAN = 1.05;
+  var SVC_SPAN = 1.8;
 
   /* ?sy=<screens> pretends the page is scrolled that many viewport heights
      down, without scrolling it. Headless capture cannot scroll (under a

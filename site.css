@@ -209,7 +209,7 @@ body.menu-open .site-header::before{opacity:0}
    for the first third of the page. The first third of the film is an empty lot and a dig, which
    is the least visually eventful part of it, so the two problems compounded. At 420 a screen of
    scrolling advances the build about a third. Keep INTRO.full in script.js in step with this. */
-.film-scroll{position:relative;height:185svh}
+.film-scroll{position:relative;height:255svh}
 .film-stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#1c1b17}
 .film-poster,.film-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
 .film-poster{opacity:1;transition:opacity .6s}
@@ -3384,3 +3384,17 @@ body.rm .svc-detail > li{transform:none}
   font-size:clamp(24px,6.4vw,34px);
   padding:11px 0;
 }
+
+/* 185svh to 255svh, and it is not a free number: it is tied to SVC_SPAN in
+   script.js, which went from 1.05 to 1.8 screens because the captions were
+   running past too fast to read.
+
+   The tie is the handover. The heading of the first section lands at
+   (height/100 - 1) + 0.127 screens, and it should land while the last
+   caption is about half faded, which is at 0.93 * SVC_SPAN. Solve for the
+   height and you get 100 * (0.93 * SVC_SPAN + 0.873). At 1.8 that is 255.
+
+   So these two move together or the gap comes back. Slow the captions
+   without lengthening the hero and the section arrives before they have
+   finished; lengthen the hero without slowing them and there is dead
+   scroll after the last one, which is exactly what was reported before. */
