@@ -3398,3 +3398,52 @@ body.rm .svc-detail > li{transform:none}
    without lengthening the hero and the section arrives before they have
    finished; lengthen the hero without slowing them and there is dead
    scroll after the last one, which is exactly what was reported before. */
+
+/* ================================================================ the carousel arrows, and the swipe
+   Two separate bugs, both reported as "the What we do carousel is broken",
+   and the second one is why only that carousel looked broken.
+
+   1. THE ARROWS WERE UNDER THE CELLS. ".car-btn" is position:absolute with
+      no z-index, and carousel.js inserts both buttons BEFORE the scroller in
+      the strip so keyboard users reach them before tabbing through every
+      tile. ".car-view" carries a mask-image, and a mask other than none
+      makes an element a stacking context, so the view and everything in it
+      paints in tree order AFTER the two buttons. Hit testing is the reverse
+      of paint order, so a tap at an arrow never reached the button at all.
+      On a phone the arrows sit at left:2px / right:2px, fully inside the
+      scroller's box, so they were 100% unreachable there.
+
+      This affected BOTH carousels equally. It only looked like a services
+      problem because of what sits underneath: a services cell is a live
+      <a href="#work">, and script.js has a delegated a[href^="#"] handler
+      that smooth-scrolls the page, so the missed tap visibly threw you down
+      to the Past work section. Under a work cell is a lightbox button, which
+      fails quietly.
+
+      z-index rather than moving the buttons back after the view, because the
+      DOM order is deliberate: it is what puts the arrows early in the tab
+      order instead of behind eighteen cells.
+
+   2. THE SWIPE. There is no drag-to-scroll code in carousel.js at all; both
+      strips move only by the browser's own touch pan of .car-view. So
+      anything that pre-empts that gesture stops the strip dead, with no JS
+      fallback to take over. On the services strip every pixel of every cell
+      is inside a link: the wash pseudo-element covers the tile edge to edge
+      with no pointer-events:none, and the word on top is selectable text. A
+      link drag, an iOS long-press preview and a text selection all compete
+      with the pan. The work cells are buttons, which is the whole of the
+      difference.
+
+      touch-action is deliberately NOT set here. Pinning it to pan-x would
+      stop the page scrolling vertically when a finger starts on the strip,
+      which is a worse bug than the one being fixed.
+   ---------------------------------------------------------------------- */
+.car-btn{ z-index:2; }
+.car-track .car-cell a,
+.car-track .car-cell img,
+.car-track .car-cell span{
+  -webkit-user-drag:none;
+  -webkit-touch-callout:none;
+  user-select:none;
+  -webkit-user-select:none;
+}

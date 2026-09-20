@@ -338,9 +338,31 @@
        (services: the tile's <a> navigates; work: script.js's own listener
        on the un-neutralised original button opens the lightbox) still
        happens exactly as it would without this carousel. */
+    /* Where the gesture started, so a swipe can be told apart from a tap.
+       Without this, every drag that happens to end on a cell also counts as
+       a click on it, and on the services strip a cell is a live
+       <a href="#work">, so swiping the carousel navigated the page to the
+       Past work section. */
+    var gestureFrom = null;
+
     host.addEventListener("click", function (e) {
       var cell = e.target.closest ? e.target.closest(".car-cell") : null;
       if (!cell) return;
+      if (gestureFrom) {
+        var moved = Math.abs(e.clientX - gestureFrom.x) > 8 ||
+                    Math.abs(e.clientY - gestureFrom.y) > 8 ||
+                    Math.abs(view.scrollLeft - gestureFrom.left) > 3;
+        gestureFrom = null;
+        if (moved) {
+          /* preventDefault kills the anchor's own navigation; stopPropagation
+             is the one that matters, because script.js has a delegated
+             a[href^="#"] handler on the document that smooth-scrolls the page,
+             and it would otherwise run after this one and do it anyway. */
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+      }
       goTo(cell);
     });
 
@@ -372,7 +394,10 @@
     });
     strip.addEventListener("focusin", function () { hold("hover", true); });
     strip.addEventListener("focusout", function () { hold("hover", false); });
-    view.addEventListener("pointerdown", function () { hold("press", true); });
+    view.addEventListener("pointerdown", function (e) {
+      hold("press", true);
+      gestureFrom = { x: e.clientX, y: e.clientY, left: view.scrollLeft };
+    });
     window.addEventListener("pointerup", function () { hold("press", false); }, { passive: true });
     window.addEventListener("pointercancel", function () { hold("press", false); }, { passive: true });
     window.addEventListener("touchend", function () { hold("press", false); }, { passive: true });
