@@ -1,0 +1,20 @@
+.mb{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;box-sizing:border-box;display:flex;flex-wrap:wrap;align-items:center;column-gap:16px;min-height:44px;margin:0;padding:0 max(12px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px,env(safe-area-inset-left));background:#0f1815;color:#ecf1ec;border-top:2px solid #e5b457;font:13px/1.35 system-ui,-apple-system,"Segoe UI",sans-serif;text-align:left}
+.mb p{margin:0}
+.mb-t{flex:1 1 360px;padding:4px 0}
+.mb-t b{font-weight:600}
+.mb-l{display:flex;align-items:center;gap:4px}
+.mb a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:#e5b457;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.mb button{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:0;padding:0;border:0;border-radius:6px;background:none;color:#ecf1ec;font:inherit;font-size:22px;line-height:1;cursor:pointer}
+.mb a:hover,.mb button:hover{color:#f3cf7c}
+.mb a:focus-visible,.mb button:focus-visible{outline:2px solid #e5b457;outline-offset:-2px;border-radius:4px}
+html.mb-on{padding-bottom:var(--mb-h,0);scroll-padding-bottom:var(--mb-h,0)}
+@media (max-width:640px){
+.mb{font-size:12px;row-gap:0}
+.mb-t{flex-basis:100%}
+.mb-t span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.mb-l{flex:1}
+.mb button{margin-left:auto}
+}
+@media (prefers-reduced-motion:no-preference){.mb{animation:mb-in .4s cubic-bezier(.16,1,.3,1) backwards}}
+@keyframes mb-in{from{transform:translateY(100%)}}
+@media print{.mb{display:none}}
