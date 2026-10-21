@@ -2,7 +2,7 @@
 var s=document.currentScript,d=document,h=d.documentElement;
 if(!s)return;
 var k='mockup-bar:'+new URL('./',s.src).pathname;
-try{if(localStorage.getItem(k)==='1')return}catch(e){}
+try{if(sessionStorage.getItem(k)==='1')return}catch(e){}
 function el(t,c,x){var e=d.createElement(t);if(c)e.className=c;if(x)e.textContent=x;return e}
 function add(p,t,u){var a=el('a','',t);a.href=u;p.appendChild(a)}
 function go(){
@@ -16,7 +16,7 @@ add(l,'(905) 347-0377','tel:+19053470377');
 x.type='button';x.setAttribute('aria-label','Hide this note');
 function size(){h.style.setProperty('--mb-h',b.offsetHeight+'px')}
 x.onclick=function(){
-try{localStorage.setItem(k,'1')}catch(e){}
+try{sessionStorage.setItem(k,'1')}catch(e){}
 b.remove();h.classList.remove('mb-on');h.style.removeProperty('--mb-h');
 removeEventListener('resize',size)};
 b.append(t,l,x);d.body.appendChild(b);
