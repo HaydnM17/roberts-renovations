@@ -10,7 +10,7 @@ var b=el('div','mb'),t=el('p','mb-t'),l=el('p','mb-l'),x=el('button','','\u00d7'
 b.setAttribute('role','note');
 t.appendChild(el('b','','Sample site made by Haydn McIntyre for '+(s.getAttribute('data-business')||'this business')+'.'));
 t.appendChild(d.createTextNode(' '));
-t.appendChild(el('span','','Anything can be changed, or I can make a different design.'));
+t.appendChild(el('span','','Anything can be changed, or I can make a different design. Get in touch if you’re interested, or get more info at haydnmcintyre.ca.'));
 add(l,'haydnmcintyre.ca','https://'+'haydnmcintyre.ca');
 add(l,'(905) 347-0377','tel:+19053470377');
 x.type='button';x.setAttribute('aria-label','Hide this note');
